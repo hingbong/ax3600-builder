@@ -13,8 +13,7 @@ sed -i 's/.ssid=OpenWrt/.ssid=OpenWrt_AX3600/' package/kernel/mac80211/files/lib
 grep "OpenWrt_AX3600" package/kernel/mac80211/files/lib/wifi/mac80211.sh
 
 # Listen with HTTP/2
-sed -i "s/list listen '443 ssl default_server'/list listen '443 ssl default_server http2'/" feeds/packages/net/nginx-util/files/nginx.config
-sed -i "s/list listen '[::]:443 ssl default_server'/list listen '[::]:443 ssl default_server http2'/" feeds/packages/net/nginx-util/files/nginx.config
+sed -i "s/ssl default_server/ssl default_server http2/g" feeds/packages/net/nginx-util/files/nginx.config
 grep "list listen" feeds/packages/net/nginx-util/files/nginx.config
 
 
