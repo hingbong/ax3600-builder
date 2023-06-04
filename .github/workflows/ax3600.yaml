@@ -120,6 +120,6 @@ jobs:
                 tag: "ax3600-${{ env.NOW }}"
                 generateReleaseNotes: true
                 makeLatest: true
-                artifacts: bin/targets/ipq807x/generic/*
+                artifacts: openwrt/bin/targets/ipq807x/generic/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
 
