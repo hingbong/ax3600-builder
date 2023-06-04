@@ -1,0 +1,11 @@
+uci set system.@system[0].timezone=CST-8
+uci set system.@system[0].zonename=Asia/Shanghai
+uci set system.@system[0].hostname='OpenWrt_AX3600'
+uci set system.@system[0].description='Xiaomi AX3600 With OpenWrt'
+uci commit system
+
+# for software offload
+uci set firewall.@defaults[0].flow_offloading='1'
+# enable monitoring thermal
+uci set luci_statistics.collectd_thermal.enable='1'
+uci commit
