@@ -4,6 +4,8 @@ uci set system.@system[0].hostname='OpenWrt_AX3600'
 uci set system.@system[0].description='Xiaomi AX3600 With OpenWrt'
 uci commit system
 
+# enable upnp
+uci set upnpd.config.enabled='1'
 # for software offload
 uci set firewall.@defaults[0].flow_offloading='1'
 # enable monitoring thermal
