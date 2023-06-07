@@ -24,5 +24,3 @@ sed -i "/add_list system.ntp.server='2.openwrt.pool.ntp.org'/d" package/base-fil
 sed -i "/add_list system.ntp.server='3.openwrt.pool.ntp.org'/d" package/base-files/files/bin/config_generate
 grep "system.ntp.server" package/base-files/files/bin/config_generate
 
-# libwebsockets: fails to build with gcc-13 https://github.com/openwrt/packages/issues/20949
-sed -i -e 's|include \$(INCLUDE_DIR)/cmake.mk|include \$(INCLUDE_DIR)/cmake.mk\nTARGET_CFLAGS += -Wno-error=enum-int-mismatch|' feeds/packages/libs/libwebsockets/Makefile

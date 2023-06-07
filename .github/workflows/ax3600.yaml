@@ -12,21 +12,32 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v3
-            - name: Pull Source
+            - uses: oprypin/find-latest-tag@v1
+              name: Find latest
+              with:
+                  repository: AgustinLorenzo/openwrt
+                  releases-only: true
+              id: octokit
+            - name: Pull OpenWrt source
+              uses: actions/checkout@v3
+              with:
+                repository: AgustinLorenzo/openwrt
+                ref: ${{ steps.octokit.outputs.tag }}
+                path: openwrt
+            - name: Make cache paths
               run: |
-                git clone -b main https://github.com/AgustinLorenzo/openwrt.git
                 cd openwrt
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p dl
-                mkdir -p {build_dir,staging_dir}/{host,toolchain-aarch64_cortex-a53_gcc-13.1.0_musl}
+                mkdir -p {build_dir,staging_dir}/{host,toolchain-aarch64_cortex-a53_gcc-12.3.0_musl}
             - uses: actions/cache@v3
               with:
                 path: |
                   openwrt/dl
                   openwrt/build_dir/host
-                  openwrt/build_dir/toolchain-aarch64_cortex-a53_gcc-13.1.0_musl
+                  openwrt/build_dir/toolchain-aarch64_cortex-a53_gcc-12.3.0_musl
                   openwrt/staging_dir/host
-                  openwrt/staging_dir/toolchain-aarch64_cortex-a53_gcc-13.1.0_musl                  
+                  openwrt/staging_dir/toolchain-aarch64_cortex-a53_gcc-12.3.0_musl 
                 key: cache-key
             - name: Test if new version
               if: ${{ github.event_name == 'schedule' }}
@@ -51,18 +62,6 @@ jobs:
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
                 cp -r ../package .
-            - name: QoL fixes on default config
-              run: |
-                cd openwrt
-                cat > files/etc/uci-defaults/xxx_config << EOF
-                uci set wireless.radio0.country='CN'
-                uci set wireless.radio1.country='CN'
-                uci set wireless.radio2.country='CN'
-                uci set wireless.radio1.disabled=0
-                uci set wireless.radio2.disabled=0
-                uci set network.globals.packet_steering=1
-                uci commit
-                EOF
             - name: Download package sources
               run: |
                 cd openwrt
