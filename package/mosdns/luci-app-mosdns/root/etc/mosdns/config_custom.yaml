@@ -21,11 +21,6 @@ plugins:
               # enable_http3: true
               max_conns: 5
               idle_timeout: 60
-            - addr: https://dot.360.cn/dns-query
-              # enable_http3: true
-              bootstrap: 101.226.4.6
-              max_conns: 5
-              idle_timeout: 60
       tag: fast_forward
       type: forward
       

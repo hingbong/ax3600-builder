@@ -28,16 +28,13 @@ jobs:
               run: |
                 cd openwrt
                 git rev-parse --short HEAD > ../lastest-commit
-                mkdir -p dl
-                mkdir -p {build_dir,staging_dir}/{host,toolchain-aarch64_cortex-a53_gcc-12.3.0_musl}
+                mkdir -p {dl,build_dir,staging_dir}
             - uses: actions/cache@v3
               with:
                 path: |
                   openwrt/dl
-                  openwrt/build_dir/host
-                  openwrt/build_dir/toolchain-aarch64_cortex-a53_gcc-12.3.0_musl
-                  openwrt/staging_dir/host
-                  openwrt/staging_dir/toolchain-aarch64_cortex-a53_gcc-12.3.0_musl 
+                  openwrt/build_dir
+                  openwrt/staging_dir
                 key: cache-key
             - name: Test if new version
               if: ${{ github.event_name == 'schedule' }}
@@ -69,17 +66,17 @@ jobs:
             - name: Build tools
               run: |
                 cd openwrt
-                make tools/install -j$(nproc) V=s || \
+                make tools/install $(($(nproc)+1)) V=s || \
                 make tools/install V=s
             - name: Build toolchain
               run: |
                 cd openwrt
-                make toolchain/install -j$(nproc) V=s || \
+                make toolchain/install $(($(nproc)+1)) V=s || \
                 make toolchain/install V=s
             - name: Build target images
               run: |
                 cd openwrt
-                make -j$(nproc) V=s || \
+                make $(($(nproc)+1)) V=s || \
                 make V=s
             - name: TAR output
               run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/ipq807x/generic
@@ -90,12 +87,16 @@ jobs:
                 name: ipq807x-images
                 path: ipq807xx-images.tar
 
-            - name: Git Auto Commit
+            - name: Git auto commit
               if: ${{ github.event_name == 'schedule' }}
               uses: stefanzweifel/git-auto-commit-action@v4.16.0
               with:
                 file_pattern: "openwrt-commit"
                 commit_message: "Upstream has update"
+            - name: Clean for cache
+              run: |
+                cd openwrt
+                make clean V=s
 
     release:
           name: Make a release
