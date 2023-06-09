@@ -8,7 +8,10 @@ jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
         runs-on: ubuntu-latest
-
+        permissions:
+          # `actions:write` permission is required to delete caches
+          actions: write
+          contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@v3
@@ -30,12 +33,15 @@ jobs:
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p {dl,build_dir,staging_dir}
             - uses: actions/cache@v3
+              name: Cache
               with:
                 path: |
                   openwrt/dl
                   openwrt/build_dir
                   openwrt/staging_dir
-                key: cache-key
+                key: cache-key-${{ github.run_id }}
+                restore-keys: |
+                  cache-key
             - name: Test if new version
               if: ${{ github.event_name == 'schedule' }}
               run: |
@@ -66,17 +72,17 @@ jobs:
             - name: Build tools
               run: |
                 cd openwrt
-                make tools/install $(($(nproc)+1)) V=s || \
+                make tools/install $(nproc) V=s || \
                 make tools/install V=s
             - name: Build toolchain
               run: |
                 cd openwrt
-                make toolchain/install $(($(nproc)+1)) V=s || \
+                make toolchain/install $(nproc) V=s || \
                 make toolchain/install V=s
             - name: Build target images
               run: |
                 cd openwrt
-                make $(($(nproc)+1)) V=s || \
+                make $(nproc) V=s || \
                 make V=s
             - name: TAR output
               run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/ipq807x/generic
@@ -97,7 +103,25 @@ jobs:
               run: |
                 cd openwrt
                 make clean V=s
+            - name: Cleanup old cache
+              env:
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                gh extension install actions/gh-actions-cache
+                REPO=${{ github.repository }}
+                BRANCH=master
 
+                echo "Fetching list of cache key"
+                cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+
+                ## Setting this to not fail the workflow while deleting cache keys. 
+                set +e
+                echo "Deleting caches..."
+                for cacheKey in $cacheKeysForPR
+                do
+                   gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+                done
+                echo "Done"
     release:
           name: Make a release
           runs-on: ubuntu-latest
