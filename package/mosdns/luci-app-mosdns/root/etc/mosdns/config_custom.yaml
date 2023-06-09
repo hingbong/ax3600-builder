@@ -1,14 +1,14 @@
 log:
     file: "/tmp/mosdns.log"
-    level: error
-    production: true            # 纯 json 输出。
+    level: info
 api:
     http: ":65534"
 plugins:
     - tag: cache
       type: cache
       args:
-          size: 65536
+          size: 1024
+          lazy_cache_ttl: 86400
 
     - args:
         concurrent: 3
