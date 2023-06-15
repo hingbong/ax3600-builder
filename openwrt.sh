@@ -19,3 +19,5 @@ sed -i "/add_list system.ntp.server='2.openwrt.pool.ntp.org'/d" package/base-fil
 sed -i "/add_list system.ntp.server='3.openwrt.pool.ntp.org'/d" package/base-files/files/bin/config_generate
 grep "system.ntp.server" package/base-files/files/bin/config_generate
 
+sed -i "s/net.netfilter.nf_conntrack_max=32768/net.netfilter.nf_conntrack_max=65535/" feeds/nss_packages/qca/qca-nss-ecm/files/qca-nss-ecm.sysctl
+
