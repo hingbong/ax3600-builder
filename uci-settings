@@ -4,24 +4,22 @@ uci set system.@system[0].hostname='OpenWrt_AX3600'
 uci set system.@system[0].description='Xiaomi AX3600 With OpenWrt'
 uci commit system
 
-# enable upnp
-uci set upnpd.config.enabled='1'
 # for software offload
 uci set firewall.@defaults[0].flow_offloading='1'
 # enable monitoring thermal
 uci set luci_statistics.collectd_thermal.enable='1'
 
-# QoL fixes on default config
+# Enable wifi by default
 uci set wireless.radio0.country='RU'
 uci set wireless.radio1.country='RU'
 uci set wireless.radio2.country='RU'
 uci set wireless.radio1.disabled=0
 uci set wireless.radio2.disabled=0
-uci set network.globals.packet_steering=1
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio2.noscan=1
 
 # Dns cache
+uci del dhcp.lan.dhcpv6
 uci set dhcp.@dnsmasq[0].nonegcache='1'
 uci set dhcp.@dnsmasq[0].dnsforwardmax='1500'
 uci set dhcp.@dnsmasq[0].cachesize='1500'
