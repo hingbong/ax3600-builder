@@ -21,8 +21,8 @@ jobs:
             - name: Pull OpenWrt source
               uses: actions/checkout@v3
               with:
-                repository: AgustinLorenzo/openwrt
-                ref: ${{ steps.octokit.outputs.tag }}
+                repository: bitthief/openwrt
+                ref: qualcommax-6.1-nss
                 path: openwrt
             - name: Make cache paths
               run: |
@@ -61,7 +61,6 @@ jobs:
                 bash openwrt.sh
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
-                cp -r ../package .
             - name: Download package sources
               run: |
                 cd openwrt
