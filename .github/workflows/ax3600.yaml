@@ -68,20 +68,20 @@ jobs:
             - name: Build tools
               run: |
                 cd openwrt
-                make tools/install $(nproc) V=s || \
+                make tools/install -j $(($(nproc)+1)) V=s || \
                 make tools/install V=s
             - name: Build toolchain
               run: |
                 cd openwrt
-                make toolchain/install $(nproc) V=s || \
+                make toolchain/install -j $(($(nproc)+1)) V=s || \
                 make toolchain/install V=s
             - name: Build target images
               run: |
                 cd openwrt
-                make $(nproc) V=s || \
+                make -j $(($(nproc)+1)) V=s || \
                 make V=s
             - name: TAR output
-              run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/ipq807x/generic
+              run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/
 
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
@@ -141,6 +141,6 @@ jobs:
                 name: "Updated prebuilt images ${{ env.NOW }}"
                 tag: "ax3600-${{ env.NOW }}"
                 makeLatest: true
-                artifacts: openwrt/bin/targets/ipq807x/generic/*
+                artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
 
