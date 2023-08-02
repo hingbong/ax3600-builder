@@ -2,8 +2,8 @@ name: Build AX3600 NSS
 
 on: 
     workflow_dispatch:
-    schedule:
-        - cron: '0 0 * * *'
+      #    schedule:
+      #  - cron: '0 0 * * *'
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -46,23 +46,23 @@ jobs:
                     diff lastest-commit openwrt-commit && echo "no updates" && exit 1
                 fi
                 mv lastest-commit openwrt-commit
+            - name: Prepare
+              run: |
+                mv openwrt.sh openwrt
+                cd openwrt
+                cp ../target/patches/* target/linux/qualcommax/patches-6.1/
+                cp ../mac80211/patches/* package/kernel/mac80211/patches/ath11k/
+                bash openwrt.sh
+                mkdir -p files/etc/uci-defaults
+                mv ../uci-settings files/etc/uci-defaults
             - name: Update and install feeds
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
                 ./scripts/feeds install -a
-            - name: Import full config for AX3600 NSS Generic
-              run: |
-                mv .full_config openwrt/.config
-            - name: Prepare
-              run: |
-                mv openwrt.sh openwrt
-                cd openwrt
-                bash openwrt.sh
-                mkdir -p files/etc/uci-defaults
-                mv ../uci-settings files/etc/uci-defaults
             - name: Download package sources
               run: |
+                mv .full_config openwrt/.config
                 cd openwrt
                 make download V=s
             - name: Build tools
