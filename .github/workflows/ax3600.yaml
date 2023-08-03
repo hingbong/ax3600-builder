@@ -55,6 +55,7 @@ jobs:
                 bash openwrt.sh
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
+                mv ../rc.local package/base-files/files/etc
             - name: Update and install feeds
               run: |
                 cd openwrt
