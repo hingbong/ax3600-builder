@@ -1560,9 +1560,19 @@ CONFIG_BUSYBOX_DEFAULT_FEATURE_IPC_SYSLOG_BUFFER_SIZE=0
 # CONFIG_PACKAGE_busybox-selinux is not set
 CONFIG_PACKAGE_ca-bundle=y
 # CONFIG_PACKAGE_ca-certificates is not set
-CONFIG_PACKAGE_dnsmasq=y
+# CONFIG_PACKAGE_dnsmasq is not set
 # CONFIG_PACKAGE_dnsmasq-dhcpv6 is not set
-# CONFIG_PACKAGE_dnsmasq-full is not set
+CONFIG_PACKAGE_dnsmasq-full=y
+CONFIG_PACKAGE_dnsmasq_full_dhcp=y
+CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
+CONFIG_PACKAGE_dnsmasq_full_dnssec=y
+CONFIG_PACKAGE_dnsmasq_full_auth=y
+CONFIG_PACKAGE_dnsmasq_full_ipset=y
+CONFIG_PACKAGE_dnsmasq_full_nftset=y
+CONFIG_PACKAGE_dnsmasq_full_conntrack=y
+CONFIG_PACKAGE_dnsmasq_full_noid=y
+CONFIG_PACKAGE_dnsmasq_full_broken_rtc=y
+CONFIG_PACKAGE_dnsmasq_full_tftp=y
 CONFIG_PACKAGE_dropbear=y
 
 #
@@ -2375,7 +2385,7 @@ CONFIG_PACKAGE_kmod-ipt-core=y
 # CONFIG_PACKAGE_kmod-ipt-ipp2p is not set
 # CONFIG_PACKAGE_kmod-ipt-iprange is not set
 # CONFIG_PACKAGE_kmod-ipt-ipsec is not set
-# CONFIG_PACKAGE_kmod-ipt-ipset is not set
+CONFIG_PACKAGE_kmod-ipt-ipset=y
 # CONFIG_PACKAGE_kmod-ipt-ipv4options is not set
 # CONFIG_PACKAGE_kmod-ipt-led is not set
 # CONFIG_PACKAGE_kmod-ipt-length2 is not set
@@ -6092,14 +6102,7 @@ CONFIG_PACKAGE_iw=y
 CONFIG_PACKAGE_odhcp6c=y
 CONFIG_PACKAGE_odhcp6c_ext_cer_id=0
 # CONFIG_PACKAGE_odhcpd is not set
-CONFIG_PACKAGE_odhcpd-ipv6only=y
-
-#
-# Configuration
-#
-CONFIG_PACKAGE_odhcpd_ipv6only_ext_cer_id=0
-# end of Configuration
-
+# CONFIG_PACKAGE_odhcpd-ipv6only is not set
 # CONFIG_PACKAGE_ola is not set
 # CONFIG_PACKAGE_omcproxy is not set
 # CONFIG_PACKAGE_onionshare-cli is not set
