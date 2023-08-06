@@ -50,8 +50,6 @@ jobs:
               run: |
                 mv openwrt.sh openwrt
                 cd openwrt
-                cp ../target/patches/* target/linux/qualcommax/patches-6.1/
-                cp ../mac80211/patches/* package/kernel/mac80211/patches/ath11k/
                 bash openwrt.sh
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
