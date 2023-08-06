@@ -3,7 +3,7 @@
 sleep 30;
 ip link set down phy1-ap0;
 ip link set down phy2-ap0;
-sleep 10;
+sleep 5;
 ip link set up phy1-ap0;
 ip link set up phy2-ap0;
 exit 0
