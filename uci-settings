@@ -5,12 +5,7 @@ uci set system.@system[0].description='Xiaomi AX3600 With OpenWrt'
 uci commit system
 
 uci del network.globals.ula_prefix
-uci set network.lan.ip6assign='64'
 uci set network.lan.ip6ifaceid='eui64'
-
-uci set dhcp.lan.ra='server'
-uci add_list dhcp.lan.ra_flags='managed-config'
-uci add_list dhcp.lan.ra_flags='other-config'
 
 # enable monitoring thermal
 uci set luci_statistics.collectd_thermal.enable='1'
@@ -25,8 +20,10 @@ uci set wireless.radio2.disabled=0
 uci set wireless.radio2.noscan=1
 
 # Dns cache
-uci del dhcp.lan.dhcpv6
 uci set dhcp.@dnsmasq[0].nonegcache='1'
 uci set dhcp.@dnsmasq[0].dnsforwardmax='1500'
 uci set dhcp.@dnsmasq[0].cachesize='1500'
+
+uci set dhcp.odhcpd.maindhcp='1'
+
 uci commit
