@@ -1,0 +1,17 @@
+diff --git a/package/libs/wolfssl/Makefile b/package/libs/wolfssl/Makefile
+index ae802e210e..8c83b4fd9c 100644
+--- a/package/libs/wolfssl/Makefile
++++ b/package/libs/wolfssl/Makefile
+@@ -123,6 +123,12 @@ TARGET_CFLAGS += \
+ 
+ # --enable-stunnel needed for OpenSSL API compatibility bits
+ CONFIGURE_ARGS += \
++	--enable-quic \
++	--enable-session-ticket \
++	--enable-earlydata \
++	--enable-psk \
++	--enable-harden \
++	--enable-altcertchains \
+ 	--enable-reproducible-build \
+ 	--enable-lighty \
+ 	--enable-opensslall \
