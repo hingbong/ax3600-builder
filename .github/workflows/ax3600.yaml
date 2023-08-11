@@ -54,10 +54,17 @@ jobs:
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
                 mv ../rc.local package/base-files/files/etc
+                cp ../wolfssl.patch .
+                git apply wolfssl.patch
+                cp -r ../ng{http3,tcp2} package/libs
             - name: Update and install feeds
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
+                cp ../curl.patch feeds/packages
+                cd feeds/packages
+                git apply curl.patch
+                cd ../..
                 ./scripts/feeds install -a
             - name: Download package sources
               run: |
