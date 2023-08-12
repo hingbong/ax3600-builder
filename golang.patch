@@ -1,0 +1,78 @@
+diff --git a/lang/golang/golang/Makefile b/lang/golang/golang/Makefile
+index 0d89cea..d1c9d64 100644
+--- a/lang/golang/golang/Makefile
++++ b/lang/golang/golang/Makefile
+@@ -7,8 +7,8 @@
+ 
+ include $(TOPDIR)/rules.mk
+ 
+-GO_VERSION_MAJOR_MINOR:=1.20
+-GO_VERSION_PATCH:=7
++GO_VERSION_MAJOR_MINOR:=1.21
++GO_VERSION_PATCH:=0
+ 
+ PKG_NAME:=golang
+ PKG_VERSION:=$(GO_VERSION_MAJOR_MINOR)$(if $(GO_VERSION_PATCH),.$(GO_VERSION_PATCH))
+@@ -20,7 +20,7 @@ GO_SOURCE_URLS:=https://dl.google.com/go/ \
+ 
+ PKG_SOURCE:=go$(PKG_VERSION).src.tar.gz
+ PKG_SOURCE_URL:=$(GO_SOURCE_URLS)
+-PKG_HASH:=2c5ee9c9ec1e733b0dbbc2bdfed3f62306e51d8172bf38f4f4e542b27520f597
++PKG_HASH:=818d46ede85682dd551ad378ef37a4d247006f12ec59b5b755601d2ce114369a
+ 
+ PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
+ PKG_LICENSE:=BSD-3-Clause
+diff --git a/lang/golang/golang/patches/001-cmd-link-use-gold-on-ARM-ARM64-only-if-gold-is-available.patch b/lang/golang/golang/patches/001-cmd-link-use-gold-on-ARM-ARM64-only-if-gold-is-available.patch
+deleted file mode 100644
+index aecf530..0000000
+--- a/lang/golang/golang/patches/001-cmd-link-use-gold-on-ARM-ARM64-only-if-gold-is-available.patch
++++ /dev/null
+@@ -1,48 +0,0 @@
+-From 5ccf9f47bf4f5ba53e0ab7338a7fd4626714cfb2 Mon Sep 17 00:00:00 2001
+-From: Jeffery To <jeffery.to@gmail.com>
+-Date: Tue, 23 Nov 2021 15:05:37 +0800
+-Subject: [PATCH] cmd/link: use gold on ARM/ARM64 only if gold is available
+-
+-COPY relocation handling on ARM/ARM64 has been fixed in recent versions
+-of the GNU linker. This switches to gold only if gold is available.
+-
+-Fixes #22040.
+----
+- src/cmd/link/internal/ld/lib.go | 19 +++++++------------
+- 1 file changed, 7 insertions(+), 12 deletions(-)
+-
+---- a/src/cmd/link/internal/ld/lib.go
+-+++ b/src/cmd/link/internal/ld/lib.go
+-@@ -1548,25 +1548,20 @@ func (ctxt *Link) hostlink() {
+- 		}
+- 
+- 		if ctxt.Arch.InFamily(sys.ARM, sys.ARM64) && buildcfg.GOOS == "linux" {
+--			// On ARM, the GNU linker will generate COPY relocations
+--			// even with -znocopyreloc set.
+-+			// On ARM, older versions of the GNU linker will generate
+-+			// COPY relocations even with -znocopyreloc set.
+- 			// https://sourceware.org/bugzilla/show_bug.cgi?id=19962
+- 			//
+--			// On ARM64, the GNU linker will fail instead of
+--			// generating COPY relocations.
+-+			// On ARM64, older versions of the GNU linker will fail
+-+			// instead of generating COPY relocations.
+- 			//
+--			// In both cases, switch to gold.
+--			altLinker = "gold"
+--
+--			// If gold is not installed, gcc will silently switch
+--			// back to ld.bfd. So we parse the version information
+--			// and provide a useful error if gold is missing.
+-+			// In both cases, switch to gold if gold is available.
+- 			name, args := flagExtld[0], flagExtld[1:]
+- 			args = append(args, "-fuse-ld=gold", "-Wl,--version")
+- 			cmd := exec.Command(name, args...)
+- 			if out, err := cmd.CombinedOutput(); err == nil {
+--				if !bytes.Contains(out, []byte("GNU gold")) {
+--					log.Fatalf("ARM external linker must be gold (issue #15696), but is not: %s", out)
+-+				if bytes.Contains(out, []byte("GNU gold")) {
+-+					altLinker = "gold"
+- 				}
+- 			}
+- 		}
