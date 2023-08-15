@@ -59,9 +59,6 @@ jobs:
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
-                cd feeds/packages
-                git apply ${GITHUB_WORKSPACE}/golang.patch
-                cd ../..
                 ./scripts/feeds install -a
             - name: Download package sources
               run: |
