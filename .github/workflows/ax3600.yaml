@@ -59,6 +59,9 @@ jobs:
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
+                cd feeds/luci
+                git apply --verbose ${GITHUB_WORKSPACE}/luci.patch
+                cd ${GITHUB_WORKSPACE}/openwrt
                 ./scripts/feeds install -a
             - name: Download package sources
               run: |
