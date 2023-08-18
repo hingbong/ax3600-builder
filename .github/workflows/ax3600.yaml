@@ -54,11 +54,14 @@ jobs:
                 mkdir -p files/etc/uci-defaults
                 mv ../uci-settings files/etc/uci-defaults
                 mv ../rc.local package/base-files/files/etc
-                mv ../config-6.1 target/linux/qualcommax/config-6.1
             - name: Update and install feeds
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
+                echo "return 0" > feeds/packages/net/unbound/files/unbound.ntpd
+                cd feeds/luci
+                git apply --verbose ${GITHUB_WORKSPACE}/luci.patch
+                cd ${GITHUB_WORKSPACE}/openwrt
                 ./scripts/feeds install -a
             - name: Download package sources
               run: |
