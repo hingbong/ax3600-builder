@@ -30,7 +30,6 @@ uci set wireless.radio2.channel='13'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
 uci set unbound.ub_main.dhcp4_slaac6='1'
-uci set unbound.ub_main.resource='tiny'
 
 uci add unbound zone # =cfg04dc81
 uci set unbound.@zone[-1].fallback='0'

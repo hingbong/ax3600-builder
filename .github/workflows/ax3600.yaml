@@ -67,6 +67,7 @@ jobs:
               run: |
                 mv .full_config openwrt/.config
                 cd openwrt
+                make defconfig V=s
                 make download V=s
             - name: Build tools
               run: |

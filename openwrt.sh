@@ -20,3 +20,6 @@ echo "src-git mosdns https://github.com/hingbong/luci-app-mosdns.git" >> feeds.c
 
 cat feeds.conf.default
 
+echo "net.netfilter.nf_conntrack_helper=1" >> package/kernel/linux/files/sysctl-nf-conntrack.conf
+cat package/kernel/linux/files/sysctl-nf-conntrack.conf
+
