@@ -23,3 +23,6 @@ cat feeds.conf.default
 echo "net.netfilter.nf_conntrack_helper=1" >> package/kernel/linux/files/sysctl-nf-conntrack.conf
 cat package/kernel/linux/files/sysctl-nf-conntrack.conf
 
+echo "net.core.default_qdisc = fq_pie" >> package/base-files/files/etc/sysctl.conf
+cat package/base-files/files/etc/sysctl.conf
+

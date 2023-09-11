@@ -6,6 +6,7 @@ uci commit system
 
 uci del network.globals.ula_prefix
 uci set network.lan.ip6ifaceid='eui64'
+uci del firewall.@defaults[-1].flow_offloading
 
 # Enable wifi by default
 uci set wireless.radio0.country='RU'
@@ -16,6 +17,8 @@ uci set wireless.radio2.disabled=0
 uci set wireless.radio2.htmode='HE40'
 uci set wireless.radio1.htmode='HE160'
 uci set wireless.default_radio1.ssid='LL-Network'
+uci set wireless.radio2.txpower='17'
+uci set wireless.radio1.txpower='17'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio2.noscan=1
 
@@ -30,6 +33,7 @@ uci set wireless.radio2.channel='13'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
 uci set unbound.ub_main.dhcp4_slaac6='1'
+uci set unbound.ub_main.resource='tiny'
 
 uci add unbound zone # =cfg04dc81
 uci set unbound.@zone[-1].fallback='0'
