@@ -48,3 +48,50 @@ uci set unbound.ub_main.unbound_control='1'
 uci set dhcp.odhcpd.maindhcp='1'
 
 uci commit
+
+## make default_radio2 as the iot network
+# /etc/config/network
+uci set network.iot=interface
+uci set network.iot.proto='none'
+
+uci set network.iot.proto='static'
+uci add_list network.iot.ipaddr='192.168.3.1/24'
+
+# /etc/config/dhcp
+uci set dhcp.iot=dhcp
+uci set dhcp.iot.interface='iot'
+uci set dhcp.iot.start='100'
+uci set dhcp.iot.limit='150'
+uci set dhcp.iot.leasetime='12h'
+
+uci set dhcp.iot.dhcpv4='server'
+uci set dhcp.iot.domain='iot'
+
+# /etc/config/firewall
+uci add firewall zone # =cfg10dc81
+uci set firewall.@zone[-1].name='iot'
+uci set firewall.@zone[-1].input='REJECT'
+uci set firewall.@zone[-1].output='ACCEPT'
+uci set firewall.@zone[-1].forward='REJECT'
+uci add_list firewall.@zone[-1].network='iot'
+uci add firewall forwarding # =cfg11ad58
+uci set firewall.@forwarding[-1].src='iot'
+uci set firewall.@forwarding[-1].dest='wan'
+
+uci add firewall rule # =cfg1292bd
+uci set firewall.@rule[-1].name='Iot DNS'
+uci set firewall.@rule[-1].src='iot'
+uci set firewall.@rule[-1].dest_port='53'
+uci set firewall.@rule[-1].target='ACCEPT'
+uci add firewall rule # =cfg1392bd
+uci set firewall.@rule[-1].name='Iot DHCP'
+uci add_list firewall.@rule[-1].proto='udp'
+uci set firewall.@rule[-1].src='iot'
+uci set firewall.@rule[-1].dest_port='67-68'
+uci set firewall.@rule[-1].target='ACCEPT'
+
+# /etc/config/wireless
+uci set wireless.default_radio2.network='iot'
+
+uci commit
+
