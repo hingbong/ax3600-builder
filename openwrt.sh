@@ -20,9 +20,8 @@ echo "src-git mosdns https://github.com/hingbong/luci-app-mosdns.git" >> feeds.c
 
 cat feeds.conf.default
 
-echo "net.netfilter.nf_conntrack_helper=1" >> package/kernel/linux/files/sysctl-nf-conntrack.conf
-cat package/kernel/linux/files/sysctl-nf-conntrack.conf
-
-echo "net.core.default_qdisc = fq_pie" >> package/base-files/files/etc/sysctl.conf
+echo "net.core.default_qdisc=fq_pie" >> package/base-files/files/etc/sysctl.conf
+echo "net.ipv4.conf.br-lan.arp_accept=1" >> package/base-files/files/etc/sysctl.conf
+echo "net.ipv4.tcp_slow_start_after_idle=0" >> package/base-files/files/etc/sysctl.conf
 cat package/base-files/files/etc/sysctl.conf
 

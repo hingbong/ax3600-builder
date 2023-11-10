@@ -16,16 +16,14 @@ uci set wireless.radio1.disabled=0
 uci set wireless.radio2.disabled=0
 uci set wireless.radio2.htmode='HE40'
 uci set wireless.radio1.htmode='HE160'
-uci set wireless.default_radio1.ssid='LL-Network'
+uci set wireless.default_radio1.ssid='Dream Believers'
 uci set wireless.radio2.txpower='17'
 uci set wireless.radio1.txpower='17'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio2.noscan=1
 
-uci set wireless.default_radio2.multicast_to_unicast_all='1'
 uci set wireless.default_radio2.time_advertisement='2'
 uci set wireless.default_radio2.time_zone='CST-8'
-uci set wireless.default_radio1.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.time_advertisement='2'
 uci set wireless.default_radio1.time_zone='CST-8'
 uci set wireless.radio2.channel='13'
@@ -66,6 +64,10 @@ uci set dhcp.iot.leasetime='12h'
 
 uci set dhcp.iot.dhcpv4='server'
 uci set dhcp.iot.domain='iot'
+uci set dhcp.iot.ra='server'
+uci set dhcp.iot.dhcpv6='server'
+uci add_list dhcp.iot.ra_flags='managed-config'
+uci add_list dhcp.iot.ra_flags='other-config'
 
 # /etc/config/firewall
 uci add firewall zone # =cfg10dc81
