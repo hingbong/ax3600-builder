@@ -16,7 +16,7 @@ uci set wireless.radio1.disabled=0
 uci set wireless.radio2.disabled=0
 uci set wireless.radio2.htmode='HE40'
 uci set wireless.radio1.htmode='HE160'
-uci set wireless.default_radio1.ssid='LL-Network'
+uci set wireless.default_radio1.ssid='Dream Believers'
 uci set wireless.radio2.txpower='17'
 uci set wireless.radio1.txpower='17'
 # Force 40Mhz on 2.4Ghz
