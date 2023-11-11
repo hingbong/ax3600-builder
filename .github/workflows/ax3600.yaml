@@ -57,6 +57,7 @@ jobs:
             - name: Update and install feeds
               run: |
                 cd openwrt
+                cp ../qca-ssdk.patch package/kernel/qca-ssdk/patches/0099-QCA-SSDK-disable-phydev-is-NULL-logspam.patch
                 ./scripts/feeds update -a
                 echo "return 0" > feeds/packages/net/unbound/files/unbound.ntpd
                 cd feeds/luci
