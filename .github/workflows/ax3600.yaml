@@ -21,8 +21,8 @@ jobs:
             - name: Pull OpenWrt source
               uses: actions/checkout@v3
               with:
-                repository: AgustinLorenzo/openwrt
-                ref: main
+                repository: bitthief/openwrt
+                ref: qualcommax-6.1-nss
                 path: openwrt
             - name: Make cache paths
               run: |
