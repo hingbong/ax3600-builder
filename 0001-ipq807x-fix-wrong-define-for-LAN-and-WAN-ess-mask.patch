@@ -1,0 +1,695 @@
+From 05cb429825cbed75bbb230b7d36876fbfd46be58 Mon Sep 17 00:00:00 2001
+From: Christian Marangi <ansuelsmth@gmail.com>
+Date: Fri, 10 Nov 2023 18:38:34 +0100
+Subject: [PATCH] ipq807x: fix wrong define for LAN and WAN ess mask
+
+switch_lan_bmp and switch_wan_bmp have wrong values and now cause
+problems with the new version of the qca-ssdk.
+
+Fix the wrong entry and drop the redundant switch_cpu_bmp.
+
+Also introduce some convenient define to better understand values in
+this map.
+
+Fixes: eea264feadcf ("kernel: qca-ssdk: update to 12.4")
+Signed-off-by: Christian Marangi <ansuelsmth@gmail.com>
+Tested-by: Robert Marko <robimarko@gmail.com> # Dynalink AX3600 and Qnap 301W
+Reviewed by: Robert Marko <robimarko@gmail.com>
+---
+ .../arm64/boot/dts/qcom/ipq8070-cax1800.dts   |   5 +-
+ .../arm64/boot/dts/qcom/ipq8071-ax3600.dtsi   |   9 +-
+ .../arm64/boot/dts/qcom/ipq8071-eap102.dts    |   5 +-
+ .../arch/arm64/boot/dts/qcom/ipq8072-301w.dts |   5 +-
+ .../arm64/boot/dts/qcom/ipq8072-ax880.dts     | 369 ++++++++++++++++++
+ .../arm64/boot/dts/qcom/ipq8072-ax9000.dts    |   5 +-
+ .../arm64/boot/dts/qcom/ipq8072-dl-wrx36.dts  |   5 +-
+ .../arch/arm64/boot/dts/qcom/ipq8072-haze.dts |   5 +-
+ .../arm64/boot/dts/qcom/ipq8072-wax218.dts    |   4 +-
+ .../arm64/boot/dts/qcom/ipq8072-wax620.dts    |   4 +-
+ .../arm64/boot/dts/qcom/ipq8072-wpq873.dts    |   5 +-
+ .../arch/arm64/boot/dts/qcom/ipq8074-ess.dtsi |   6 +-
+ .../arm64/boot/dts/qcom/ipq8074-nbg7815.dts   |   5 +-
+ .../arm64/boot/dts/qcom/ipq8074-rax120v2.dts  |   4 +-
+ .../arm64/boot/dts/qcom/ipq8074-wax630.dts    |   7 +-
+ .../boot/dts/qcom/ipq8074-wxr-5950ax12.dts    |   5 +-
+ .../include/dt-bindings/net/qcom-ipq-ess.h    |  15 +
+ 17 files changed, 415 insertions(+), 48 deletions(-)
+ create mode 100644 target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax880.dts
+ create mode 100644 target/linux/qualcommax/files/include/dt-bindings/net/qcom-ipq-ess.h
+
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8070-cax1800.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8070-cax1800.dts
+index 39d2f83c87..bd477c366b 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8070-cax1800.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8070-cax1800.dts
+@@ -272,9 +272,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x1e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x20>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT5>; /* wan port bitmap */
+ 	switch_mac_mode = <0x0>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dtsi b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dtsi
+index 033e804020..34433af573 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dtsi
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dtsi
+@@ -236,9 +236,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x1e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x20>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT5>; /* wan port bitmap */
+ 	switch_mac_mode = <0x0>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
+@@ -246,10 +245,6 @@
+ 	tm_tick_mode = <0>; /* tm tick mode */
+ 
+ 	qcom,port_phyinfo {
+-		port@0 {
+-			port_id = <1>;
+-			phy_address = <0>;
+-		};
+ 		port@1 {
+ 			port_id = <2>;
+ 			phy_address = <1>;
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-eap102.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-eap102.dts
+index 17e94dc229..54e575489b 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-eap102.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-eap102.dts
+@@ -344,9 +344,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x40>; /* wan port bitmap */
++	switch_lan_bmp = <ESS_PORT5>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0xff>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xf>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xf>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-301w.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-301w.dts
+index 20f2471b0e..5a0960b7f5 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-301w.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-301w.dts
+@@ -322,9 +322,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+-	switch_wan_bmp = <0xc0>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4 | ESS_PORT5)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0xb>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xd>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xd>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax880.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax880.dts
+new file mode 100644
+index 0000000000..4551e7b6b3
+--- /dev/null
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax880.dts
+@@ -0,0 +1,369 @@
++// SPDX-License-Identifier: MIT, GPL-2.0 or later
++/* Copyright (c) 2023, Ruslan Isaev <legale.legale@gmail.com> */
++
++/dts-v1/;
++
++#include "ipq8074.dtsi"
++#include "ipq8074-hk-cpu.dtsi"
++#include "ipq8074-ess.dtsi"
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++
++/ {
++	model = "Yuncore AX880";
++	compatible = "yuncore,ax880", "qcom,ipq8074", "qcom,ipq8074-hk09";
++
++	aliases {
++		serial0 = &blsp1_uart5;
++		serial1 = &blsp1_uart3;
++		led-boot = &led_system;
++		led-failsafe = &led_system;
++		led-running = &led_system;
++		led-upgrade = &led_system;
++		/* Aliases as required by u-boot to patch MAC addresses */
++		ethernet0 = &dp5_syn;
++		ethernet1 = &dp6_syn;
++		label-mac-device = &dp5_syn;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++		bootargs-append = " root=/dev/ubiblock0_1";
++	};
++
++	keys {
++		compatible = "gpio-keys";
++		pinctrl-0 = <&button_pins>;
++		pinctrl-names = "default";
++
++		reset {
++			label = "reset";
++			gpios = <&tlmm 57 GPIO_ACTIVE_LOW>;
++			linux,code = <KEY_RESTART>;
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		led_system: system {
++			label = "system";
++			color = "red";
++			gpios = <&tlmm 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		wlan2g {
++			label = "wlan2g";
++			color = "green";
++			linux,default-trigger = "phy0tpt";
++			gpios = <&tlmm 2 GPIO_ACTIVE_HIGH>;
++		};
++
++		wlan5g {
++			label = "wlan5g";
++			color = "blue";
++			linux,default-trigger = "phy1tpt";
++			gpios = <&tlmm 9 GPIO_ACTIVE_HIGH>;
++		};
++	};
++};
++
++&tlmm {
++	mdio_pins: mdio-pins {
++		mdc {
++			pins = "gpio68";
++			function = "mdc";
++			drive-strength = <8>;
++			bias-pull-up;
++		};
++
++		mdio {
++			pins = "gpio69";
++			function = "mdio";
++			drive-strength = <8>;
++			bias-pull-up;
++		};
++	};
++
++	button_pins: button_pins {
++		reset_button {
++			pins = "gpio57";
++			function = "gpio";
++			drive-strength = <8>;
++			bias-pull-up;
++		};
++	};
++};
++
++&blsp1_spi1 {
++	status = "okay";
++
++	flash@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0>;
++		compatible = "jedec,spi-nor";
++		spi-max-frequency = <50000000>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "0:sbl1";
++				reg = <0x0 0x50000>;
++				read-only;
++			};
++
++			partition@50000 {
++				label = "0:mibib";
++				reg = <0x50000 0x10000>;
++				read-only;
++			};
++
++			partition@60000 {
++				label = "0:bootconfig";
++				reg = <0x60000 0x20000>;
++				read-only;
++			};
++
++			partition@80000 {
++				label = "0:bootconfig1";
++				reg = <0x80000 0x20000>;
++				read-only;
++			};
++
++			partition@a0000 {
++				label = "0:qsee_1";
++				reg = <0xa0000 0x180000>;
++				read-only;
++			};
++
++			partition@220000 {
++				label = "0:qsee";
++				reg = <0x220000 0x180000>;
++				read-only;
++			};
++
++			partition@3a0000 {
++				label = "0:devcfg";
++				reg = <0x3a0000 0x10000>;
++				read-only;
++			};
++
++			partition@3b0000 {
++				label = "0:devcfg_1";
++				reg = <0x3b0000 0x10000>;
++				read-only;
++			};
++
++			partition@3c0000 {
++				label = "0:apdp";
++				reg = <0x3c0000 0x10000>;
++				read-only;
++			};
++
++			partition@3d0000 {
++				label = "0:apdp_1";
++				reg = <0x3d0000 0x10000>;
++				read-only;
++			};
++
++			partition@3e0000 {
++				label = "0:rpm_1";
++				reg = <0x3e0000 0x40000>;
++				read-only;
++			};
++
++			partition@420000 {
++				label = "0:rpm";
++				reg = <0x420000 0x40000>;
++				read-only;
++			};
++
++			partition@460000 {
++				label = "0:cdt_1";
++				reg = <0x460000 0x10000>;
++				read-only;
++			};
++
++			partition@470000 {
++				label = "0:cdt";
++				reg = <0x470000 0x10000>;
++				read-only;
++			};
++
++			partition@480000 {
++				label = "0:appsblenv";
++				reg = <0x480000 0x10000>;
++			};
++
++			partition@490000 {
++				label = "0:appsbl_1";
++				reg = <0x490000 0xa0000>;
++				read-only;
++			};
++
++			partition@550000 {
++				label = "0:appsbl";
++				reg = <0x530000 0xa0000>;
++				read-only;
++			};
++
++			partition@610000 {
++				label = "0:art";
++				reg = <0x5d0000 0x40000>;
++				read-only;
++			};
++
++			partition@650000 {
++				label = "0:ethphyfw";
++				reg = <0x610000 0x80000>;
++				read-only;
++			};
++
++		};
++	};
++};
++
++//serial interface
++&blsp1_uart3 {
++	status = "okay";
++};
++
++&blsp1_uart5 {
++	status = "okay";
++};
++
++&crypto {
++	status = "okay";
++};
++
++&cryptobam {
++	status = "okay";
++};
++
++&prng {
++	status = "okay";
++};
++
++&qpic_bam {
++	status = "okay";
++};
++
++&qusb_phy_0 {
++	status = "okay";
++};
++
++&ssphy_0 {
++	status = "okay";
++};
++
++&usb_0 {
++	status = "okay";
++};
++
++&qpic_nand {
++	status = "okay";
++
++	nand@0 {
++		reg = <0>;
++		nand-ecc-strength = <4>;
++		nand-ecc-step-size = <512>;
++		nand-bus-width = <8>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "rootfs_1";
++				reg = <0x0000000 0x3400000>;
++			};
++
++			partition@3400000 {
++				label = "0:wififw";
++				reg = <0x3400000 0x800000>;
++				read-only;
++			};
++
++			rootfs: partition@3c00000 {
++				label = "rootfs";
++				reg = <0x3c00000 0x3400000>;
++			};
++
++			partition@7000000 {
++				label = "0:wififw_1";
++				reg = <0x7000000 0x800000>;
++				read-only;
++			};
++		};
++	};
++};
++
++&mdio {
++	status = "okay";
++
++	pinctrl-0 = <&mdio_pins>;
++	pinctrl-names = "default";
++   
++	qca8081_24: ethernet-phy@24 {
++		compatible = "ethernet-phy-id004d.d101";
++		reg = <24>;
++		reset-gpios = <&tlmm 33 GPIO_ACTIVE_LOW>;
++	};
++
++	qca8081_28: ethernet-phy@28 {
++		compatible = "ethernet-phy-id004d.d101";
++		reg = <28>;
++		reset-gpios = <&tlmm 44 GPIO_ACTIVE_LOW>;
++	};
++};
++
++&switch {
++	status = "okay";
++
++	switch_lan_bmp = <ESS_PORT5>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
++	switch_mac_mode = <0xff>; /* mac mode for uniphy instance0*/
++	switch_mac_mode1 = <0xf>; /* mac mode for uniphy instance1*/
++	switch_mac_mode2 = <0xf>; /* mac mode for uniphy instance2*/
++	bm_tick_mode = <0>; /* bm tick mode */
++	tm_tick_mode = <0>; /* tm tick mode */
++
++	qcom,port_phyinfo {
++		port@4 {
++			port_id = <5>;
++			phy_address = <24>;
++			port_mac_sel = "QGMAC_PORT";
++		};
++		port@5 {
++			port_id = <6>;
++			phy_address = <28>;
++			port_mac_sel = "QGMAC_PORT";
++		};
++	};
++};
++
++&edma {
++	status = "okay";
++};
++
++&dp5_syn {
++	status = "okay";
++	phy-handle = <&qca8081_24>;
++	label = "wan";
++};
++
++&dp6_syn {
++	status = "okay";
++	phy-handle = <&qca8081_28>;
++	label = "lan";
++};
++
++&wifi {
++	status = "okay";
++	qcom,ath11k-calibration-variant = "Yuncore-AX880";
++};
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax9000.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax9000.dts
+index d537198efd..71c8d4a885 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax9000.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-ax9000.dts
+@@ -383,9 +383,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x1e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x20>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT5>; /* wan port bitmap */
+ 	switch_mac_mode = <0xb>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xc>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-dl-wrx36.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-dl-wrx36.dts
+index 44845bfee6..4426c85f69 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-dl-wrx36.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-dl-wrx36.dts
+@@ -170,9 +170,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x40>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0xb>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xc>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-haze.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-haze.dts
+index b89c9e17a6..47f6003f93 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-haze.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-haze.dts
+@@ -187,9 +187,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x1e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x60>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0x0>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xe>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xd>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax218.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax218.dts
+index ad80926290..be3a49b6a6 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax218.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax218.dts
+@@ -90,9 +90,7 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;
+-	switch_lan_bmp = <0x3e>;
+-	switch_wan_bmp = <0x40>;
++	switch_wan_bmp = <ESS_PORT6>;
+ 	switch_mac_mode = <0x00>;
+ 	switch_mac_mode1 = <0xff>;
+ 	switch_mac_mode2 = <0x0f>;
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax620.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax620.dts
+index b1d09f11f2..de846b011b 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax620.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wax620.dts
+@@ -118,9 +118,7 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x01>;
+-	switch_lan_bmp = <0x3e>;
+-	switch_wan_bmp = <0x40>;
++	switch_wan_bmp = <ESS_PORT6>;
+ 	switch_mac_mode = <0x00>;
+ 	switch_mac_mode1 = <0xff>;
+ 	switch_mac_mode2 = <0x0f>;
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wpq873.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wpq873.dts
+index cc706947d9..a51dd05324 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wpq873.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8072-wpq873.dts
+@@ -389,9 +389,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x40>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT2 | ESS_PORT3 | ESS_PORT4)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0x0>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0x0f>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0x0f>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-ess.dtsi b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-ess.dtsi
+index 129266c50d..597f7f1ff9 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-ess.dtsi
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-ess.dtsi
+@@ -1,5 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ 
++#include <dt-bindings/net/qcom-ipq-ess.h>
++
+ &clocks {
+ 	bias_pll_cc_clk {
+ 		compatible = "fixed-clock";
+@@ -19,8 +21,8 @@
+ 		compatible = "qcom,ess-switch-ipq807x";
+ 		reg = <0x3a000000 0x1000000>;
+ 		switch_access_mode = "local bus";
+-		switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
+-		switch_inner_bmp = <0x80>; /*inner port bitmap*/
++		switch_cpu_bmp = <ESS_PORT0>;  /* cpu port bitmap */
++		switch_inner_bmp = <ESS_PORT7>; /*inner port bitmap*/
+ 		clocks = <&gcc GCC_CMN_12GPLL_AHB_CLK>,
+ 			 <&gcc GCC_CMN_12GPLL_SYS_CLK>,
+ 			 <&gcc GCC_UNIPHY0_AHB_CLK>,
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-nbg7815.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-nbg7815.dts
+index 098b45411c..67952937bc 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-nbg7815.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-nbg7815.dts
+@@ -299,9 +299,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;
+-	switch_lan_bmp = <0x3e>;
+-	switch_wan_bmp = <0x40>;
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4 | ESS_PORT5)>;
++	switch_wan_bmp = <ESS_PORT6>;
+ 	switch_mac_mode = <0x0>;
+ 	switch_mac_mode1 = <0xf>;
+ 	switch_mac_mode2 = <0xd>;
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-rax120v2.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-rax120v2.dts
+index c35faae679..11c8b785b1 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-rax120v2.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-rax120v2.dts
+@@ -196,8 +196,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_lan_bmp = <0x3e>; /* lan port bitmap */
+-	switch_wan_bmp = <0x40>; /* wan port bitmap */
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4 | ESS_PORT5)>; /* lan port bitmap */
++	switch_wan_bmp = <ESS_PORT6>; /* wan port bitmap */
+ 	switch_mac_mode = <0x0>; /* mac mode for uniphy instance0*/
+ 	switch_mac_mode1 = <0xff>; /* mac mode for uniphy instance1*/
+ 	switch_mac_mode2 = <0xd>; /* mac mode for uniphy instance2*/
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wax630.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wax630.dts
+index bdfc722c07..0cf07ce8a4 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wax630.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wax630.dts
+@@ -151,10 +151,9 @@
+ 
+ &switch {
+ 	status = "okay";
+-
+-	switch_cpu_bmp = <0x01>;
+-	switch_lan_bmp = <0x3e>;
+-	switch_wan_bmp = <0x40>;
++	
++	switch_lan_bmp = <ESS_PORT4>;
++	switch_wan_bmp = <ESS_PORT6>;
+ 	switch_mac_mode = <0x00>;
+ 	switch_mac_mode1 = <0xff>;
+ 	switch_mac_mode2 = <0x0d>;
+diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wxr-5950ax12.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wxr-5950ax12.dts
+index 6173f22ccc..4f7eb7d858 100644
+--- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wxr-5950ax12.dts
++++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8074-wxr-5950ax12.dts
+@@ -268,9 +268,8 @@
+ &switch {
+ 	status = "okay";
+ 
+-	switch_cpu_bmp = <0x1>;
+-	switch_lan_bmp = <0x3e>;
+-	switch_wan_bmp = <0x40>;
++	switch_lan_bmp = <(ESS_PORT1 | ESS_PORT2 | ESS_PORT3 | ESS_PORT4 | ESS_PORT5)>;
++	switch_wan_bmp = <ESS_PORT6>;
+ 	switch_mac_mode = <0xb>;
+ 	switch_mac_mode1 = <0xd>;
+ 	switch_mac_mode2 = <0xd>;
+diff --git a/target/linux/qualcommax/files/include/dt-bindings/net/qcom-ipq-ess.h b/target/linux/qualcommax/files/include/dt-bindings/net/qcom-ipq-ess.h
+new file mode 100644
+index 0000000000..0ecadb35c6
+--- /dev/null
++++ b/target/linux/qualcommax/files/include/dt-bindings/net/qcom-ipq-ess.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef _DT_BINDINGS_NET_QCOM_IPQ_ESS_H
++#define _DT_BINDINGS_NET_QCOM_IPQ_ESS_H
++
++#define ESS_PORT0	0x1
++#define ESS_PORT1	0x2
++#define ESS_PORT2	0x4
++#define ESS_PORT3	0x8
++#define ESS_PORT4	0x10
++#define ESS_PORT5	0x20
++#define ESS_PORT6	0x40
++#define ESS_PORT7	0x80
++
++#endif /* _DT_BINDINGS_NET_QCOM_IPQ_ESS_H */
+-- 
+2.42.0
+
