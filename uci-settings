@@ -6,7 +6,6 @@ uci commit system
 
 uci del network.globals.ula_prefix
 uci set network.lan.ip6ifaceid='eui64'
-uci del firewall.@defaults[-1].flow_offloading
 
 # Enable wifi by default
 uci set wireless.radio0.country='RU'
