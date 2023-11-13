@@ -10,6 +10,18 @@ jobs:
         runs-on: ubuntu-latest
         permissions: write-all
         steps:
+            - name: Maximize build space
+              uses: easimon/maximize-build-space@master
+              with:
+                root-reserve-mb: 8192
+                temp-reserve-mb: 2048
+                remove-dotnet: 'true'
+                remove-android: 'true'
+                remove-haskell: 'true'
+                remove-codeql: 'true'
+            - name: show space
+              run: |
+                df -h
             - name: Checkout
               uses: actions/checkout@v3
             - uses: oprypin/find-latest-tag@v1
@@ -61,7 +73,7 @@ jobs:
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
-                echo "return 0" > feeds/packages/net/unbound/files/unbound.ntpd
+                echo "exit 0" > feeds/packages/net/unbound/files/unbound.ntpd
                 cd feeds/luci
                 git apply --verbose ${GITHUB_WORKSPACE}/luci.patch
                 cd ${GITHUB_WORKSPACE}/openwrt
