@@ -29,9 +29,7 @@ jobs:
                 cd openwrt
                 git config --global user.name "${GITHUB_ACTOR}"
                 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-                git fetch https://github.com/openwrt/openwrt.git
-                git cherry-pick 8cce00bc9dddc3fc47d63625b0f512693c27ce2f
-                git apply -v ../0001-ipq807x-fix-wrong-define-for-LAN-and-WAN-ess-mask.patch
+                ls ../patches | xargs -I {} git apply -v ../patches/{}
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p {dl,build_dir,staging_dir}
             - uses: actions/cache@v3
