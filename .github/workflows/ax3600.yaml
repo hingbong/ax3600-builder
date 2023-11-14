@@ -24,16 +24,11 @@ jobs:
                 df -h
             - name: Checkout
               uses: actions/checkout@v3
-            - uses: oprypin/find-latest-tag@v1
-              name: Find latest
-              with:
-                  repository: AgustinLorenzo/openwrt
-                  releases-only: true
               id: octokit
             - name: Pull OpenWrt source
               uses: actions/checkout@v3
               with:
-                repository: bitthief/openwrt
+                repository: dimfishr/openwrt
                 ref: qualcommax-6.1-nss
                 path: openwrt
             - name: Make cache paths
@@ -54,13 +49,6 @@ jobs:
                 key: cache-key-${{ github.run_id }}
                 restore-keys: |
                   cache-key
-            - name: Test if new version
-              if: ${{ github.event_name == 'schedule' }}
-              run: |
-                if [ -f "openwrt-commit" ]; then
-                    diff lastest-commit openwrt-commit && echo "no updates" && exit 1
-                fi
-                mv lastest-commit openwrt-commit
             - name: Prepare
               run: |
                 mv openwrt.sh openwrt
@@ -101,19 +89,11 @@ jobs:
                 make V=s
             - name: TAR output
               run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/
-
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
               with:
                 name: ipq807x-images
                 path: ipq807xx-images.tar
-
-            - name: Git auto commit
-              if: ${{ github.event_name == 'schedule' }}
-              uses: stefanzweifel/git-auto-commit-action@v4.16.0
-              with:
-                file_pattern: "openwrt-commit"
-                commit_message: "Upstream has update"
             - name: Clean for cache
               run: |
                 cd openwrt
