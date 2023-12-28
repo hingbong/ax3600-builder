@@ -49,6 +49,8 @@ uci set dhcp.lan.preferred_lifetime='30m'
 uci set dhcp.lan.leasetime='30m'
 uci del dhcp.lan.dhcpv6
 
+uci del firewall.@defaults[0].flow_offloading='0'
+
 uci commit
 
 ## make default_radio1 as the iot network
@@ -97,3 +99,12 @@ uci set wireless.default_radio1.network='iot'
 
 uci commit
 
+uci del unbound.ub_main.iface_lan
+uci add_list unbound.ub_main.iface_lan='iot'
+uci add_list unbound.ub_main.iface_lan='lan'
+uci del unbound.ub_main.iface_trig
+uci add_list unbound.ub_main.iface_trig='iot'
+uci add_list unbound.ub_main.iface_trig='lan'
+uci add_list unbound.ub_main.iface_trig='wan'
+
+uci commit
