@@ -9,6 +9,10 @@ jobs:
         name: Prepare and build AX3600 NSS generic images
         runs-on: ubuntu-latest
         permissions: write-all
+        outputs:
+          OPENWRT_SOURCE_REPO_URL: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REPO_URL }}
+          OPENWRT_SOURCE_REF: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REF }}
+          OPENWRT_SOURCE_SHA: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_SHA }}
         steps:
             - name: Maximize build space
               uses: easimon/maximize-build-space@master
@@ -27,17 +31,17 @@ jobs:
               id: octokit
             - name: Pull OpenWrt source
               uses: actions/checkout@v4
-              id: openwrt_source_pull
               with:
                 repository: qosmio/openwrt-ipq
                 ref: qualcommax-6.1-nss-wifi
                 path: openwrt
             - name: Get OpenWrt source Info
+              id: openwrt_source_repo_info
               run: |
                 cd openwrt
-                echo "OPENWRT_SOURCE_REPO_URL=$(git config --get remote.origin.url)" >> "$GITHUB_ENV"
-                echo "OPENWRT_SOURCE_REF=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
-                echo "OPENWRT_SOURCE_SHA=$(/usr/bin/git log -1 --format='%H')" >> "$GITHUB_ENV"
+                echo "OPENWRT_SOURCE_REPO_URL=$(git config --get remote.origin.url)" >> "$GITHUB_OUTPUT"
+                echo "OPENWRT_SOURCE_REF=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_OUTPUT"
+                echo "OPENWRT_SOURCE_SHA=$(/usr/bin/git log -1 --format='%H')" >> "$GITHUB_OUTPUT"
             - name: Make cache paths
               run: |
                 cd openwrt
@@ -125,7 +129,6 @@ jobs:
           name: Make a release
           runs-on: ubuntu-latest
           needs: build
-
           steps:
             - name: Download the image artifacts
               uses: actions/download-artifact@v3
@@ -139,16 +142,18 @@ jobs:
               run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
             - name: Generate bodyFile
               run: |
-                echo "Repository URL: ${{ env.OPENWRT_SOURCE_REPO_URL }}" >> $GITHUB_WORKSPACE/bodyFile
-                echo "Git Reference: ${{ env.OPENWRT_SOURCE_REF }}" >> $GITHUB_WORKSPACE/bodyFile
-                echo "SHA: ${{ env.OPENWRT_SOURCE_SHA }}" >> $GITHUB_WORKSPACE/bodyFile
+                echo "Repository URL: ${{ needs.build.outputs.OPENWRT_SOURCE_REPO_URL }}" >> bodyFile
+                echo "Git Reference: ${{ needs.build.outputs.OPENWRT_SOURCE_REF }}" >> bodyFile
+                echo "SHA: ${{ needs.build.outputs.OPENWRT_SOURCE_SHA }}" >> bodyFile
+                realpath bodyFile
+                cat bodyFile
             - name: Create a release
               uses: "ncipollo/release-action@v1"
               with:
                 name: "Updated prebuilt images ${{ env.NOW }}"
                 tag: "ax3600-${{ env.NOW }}"
                 makeLatest: true
-                bodyFile: $GITHUB_WORKSPACE/bodyFile
+                bodyFile: bodyFile
                 artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
 
