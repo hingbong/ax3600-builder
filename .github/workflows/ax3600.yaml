@@ -35,9 +35,9 @@ jobs:
             - name: Get OpenWrt source Info
               run: |
                 cd openwrt
-                echo "::set-env name=OPENWRT_SOURCE_REPO_URL::$(git config --get remote.origin.url)"
-                echo "::set-env name=OPENWRT_SOURCE_REF::$(git rev-parse --abbrev-ref HEAD)"
-                echo "::set-env name=OPENWRT_SOURCE_SHA::$(/usr/bin/git log -1 --format='%H')"
+                echo "OPENWRT_SOURCE_REPO_URL=$(git config --get remote.origin.url)" >> "$GITHUB_ENV"
+                echo "OPENWRT_SOURCE_REF=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_ENV"
+                echo "OPENWRT_SOURCE_SHA=$(/usr/bin/git log -1 --format='%H')" >> "$GITHUB_ENV"
             - name: Make cache paths
               run: |
                 cd openwrt
