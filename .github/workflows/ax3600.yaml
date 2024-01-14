@@ -96,7 +96,9 @@ jobs:
                 make -j $(($(nproc)+1)) V=s || \
                 make V=s
             - name: TAR output
-              run: tar -cvf ipq807xx-images.tar openwrt/bin/targets/
+              run: |
+                cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
+                tar -cvf ipq807xx-images.tar openwrt/bin/targets/
             - name: Upload artifacts
               uses: actions/upload-artifact@v3
               with:
