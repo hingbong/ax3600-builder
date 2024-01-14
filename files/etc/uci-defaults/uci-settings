@@ -6,6 +6,8 @@ uci commit system
 
 uci del network.globals.ula_prefix
 uci set network.lan.ip6ifaceid='eui64'
+uci del network.wan6
+uci set firewall.@zone[1].network='wan'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
