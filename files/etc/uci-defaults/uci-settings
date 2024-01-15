@@ -8,6 +8,10 @@ uci del network.globals.ula_prefix
 uci set network.lan.ip6ifaceid='eui64'
 uci del network.wan6
 uci set firewall.@zone[1].network='wan'
+uci set network.wan.peerdns='0'
+uci add_list network.wan.dns='::1'
+uci set network.wan.proto='pppoe'
+uci set network.wan.ipv6='auto'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
