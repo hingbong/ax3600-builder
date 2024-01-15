@@ -33,7 +33,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                 repository: qosmio/openwrt-ipq
-                ref: qualcommax-6.1-nss-wifi
+                ref: qualcommax-6.1-nss
                 path: openwrt
             - name: Get OpenWrt source Info
               id: openwrt_source_repo_info
