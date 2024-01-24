@@ -50,7 +50,7 @@ jobs:
                 ls ../patches | xargs -I {} git apply -v ../patches/{}
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p {dl,build_dir,staging_dir}
-            - uses: actions/cache@v3
+            - uses: actions/cache@v4
               name: Cache
               with:
                 path: |
