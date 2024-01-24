@@ -38,7 +38,6 @@ uci set wireless.default_radio0.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.dtim_period='3'
 uci set wireless.default_radio1.max_inactivity='86400'
 uci set wireless.default_radio1.disassoc_low_ack='0'
-uci set wireless.default_radio1.multicast_to_unicast_all='1'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio1.noscan=1
 
@@ -64,6 +63,9 @@ uci set dhcp.lan.ra_dns='0'
 uci set dhcp.lan.preferred_lifetime='30m'
 uci set dhcp.lan.leasetime='30m'
 uci del dhcp.lan.dhcpv6
+uci del dhcp.lan.ra_slaac
+uci del dhcp.lan.ra_flags
+uci add_list dhcp.lan.ra_flags='none'
 
 uci del firewall.@defaults[0].flow_offloading='0'
 
