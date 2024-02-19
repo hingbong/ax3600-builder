@@ -100,7 +100,7 @@ jobs:
                 cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
                 tar -cvf ipq807xx-images.tar openwrt/bin/targets/
             - name: Upload artifacts
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: ipq807x-images
                 path: ipq807xx-images.tar
@@ -133,7 +133,7 @@ jobs:
           needs: build
           steps:
             - name: Download the image artifacts
-              uses: actions/download-artifact@v3
+              uses: actions/download-artifact@v4
               with:
                 name: ipq807x-images
 
