@@ -62,10 +62,11 @@ uci set dhcp.lan.ra_dns='0'
 uci set dhcp.lan.leasetime='10m'
 uci set dhcp.lan.ra_mininterval='0'
 uci set dhcp.lan.preferred_lifetime='5m'
-uci del dhcp.lan.dhcpv6
-uci del dhcp.lan.ra_slaac
+uci set dhcp.lan.ra_maxinterval='120'
+uci set dhcp.lan.ra_mininterval='40'
+uci set dhcp.lan.ra_lifetime='360'
 uci del dhcp.lan.ra_flags
-uci add_list dhcp.lan.ra_flags='none'
+uci add_list dhcp.lan.ra_flags='other-config'
 
 uci del firewall.@defaults[0].flow_offloading='0'
 
