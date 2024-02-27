@@ -20,8 +20,3 @@ echo "src-git hickory_dns https://github.com/hingbong/hickory-dns-openwrt.git" >
 
 cat feeds.conf.default
 
-echo "net.core.default_qdisc=fq_pie" >> package/base-files/files/etc/sysctl.conf
-echo "net.ipv4.conf.br-lan.arp_accept=1" >> package/base-files/files/etc/sysctl.conf
-echo "net.ipv4.tcp_slow_start_after_idle=0" >> package/base-files/files/etc/sysctl.conf
-cat package/base-files/files/etc/sysctl.conf
-
