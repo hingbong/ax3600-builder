@@ -10,6 +10,7 @@ uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
+uci set network.wan.mtu='1488'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
