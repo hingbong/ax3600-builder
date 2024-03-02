@@ -59,7 +59,7 @@ uci set unbound.ub_main.unbound_control='1'
 uci set dhcp.odhcpd.maindhcp='1'
 
 uci set dhcp.lan.ra_dns='0'
-uci set dhcp.lan.leasetime='10m'
+uci set dhcp.lan.leasetime='5m'
 uci set dhcp.lan.ra_mininterval='0'
 uci set dhcp.lan.preferred_lifetime='5m'
 uci set dhcp.lan.ra_maxinterval='120'
