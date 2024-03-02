@@ -65,14 +65,12 @@ jobs:
                 mv openwrt.sh openwrt
                 cd openwrt
                 bash openwrt.sh
-                mkdir -p files/etc/uci-defaults
+                mkdir files
                 ls ../files/ | xargs -I "{}" cp -rf ../files/{} files/
             - name: Update and install feeds
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
-                echo "exit 0" > feeds/packages/net/unbound/files/unbound.ntpd
-                sed -i "s/rm -f \$UB_RESOLV_CONF/return 0/g" feeds/packages/net/unbound/files/unbound.sh
                 ./scripts/feeds install -a
             - name: Download package sources
               run: |
