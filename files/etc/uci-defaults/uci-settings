@@ -46,6 +46,11 @@ uci set unbound.ub_main.protocol='ip6_prefer'
 uci del unbound.ub_main.query_minimize
 uci del unbound.ub_main.query_min_strict
 
+uci del unbound.auth_icann
+uci del unbound.fwd_isp
+uci del unbound.fwd_google
+uci del unbound.fwd_cloudflare
+
 uci add unbound zone # =cfg04dc81
 uci set unbound.@zone[-1].fallback='0'
 uci set unbound.@zone[-1].enabled='1'
