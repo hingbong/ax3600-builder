@@ -1,0 +1,45 @@
+diff --git a/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js b/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js
+index 45f7b4acae6d..be35cc6b453b 100644
+--- a/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js
++++ b/modules/luci-mod-status/htdocs/luci-static/resources/view/status/include/10_system.js
+@@ -25,14 +25,16 @@ return baseclass.extend({
+ 		return Promise.all([
+ 			L.resolveDefault(callSystemBoard(), {}),
+ 			L.resolveDefault(callSystemInfo(), {}),
+-			L.resolveDefault(callLuciVersion(), { revision: _('unknown version'), branch: 'LuCI' })
++			L.resolveDefault(callLuciVersion(), { revision: _('unknown version'), branch: 'LuCI' }),
++			fs.exec_direct('awk',[ '/%/{printf "Avg: %s Max: %s",$2,$3}', '/sys/kernel/debug/qca-nss-drv/stats/cpu_load_ubi'])
+ 		]);
+ 	},
+ 
+ 	render: function(data) {
+ 		var boardinfo   = data[0],
+ 		    systeminfo  = data[1],
+-		    luciversion = data[2];
++		    luciversion = data[2],
++		    nssinfo     = data[3];
+ 
+ 		luciversion = luciversion.branch + ' ' + luciversion.revision;
+ 
+@@ -64,7 +66,8 @@ return baseclass.extend({
+ 				systeminfo.load[0] / 65535.0,
+ 				systeminfo.load[1] / 65535.0,
+ 				systeminfo.load[2] / 65535.0
+-			) : null
++			) : null,
++			_('NSS Load'),         nssinfo
+ 		];
+ 
+ 		var table = E('table', { 'class': 'table' });
+diff --git a/modules/luci-mod-status/root/usr/share/rpcd/acl.d/luci-mod-status.json b/modules/luci-mod-status/root/usr/share/rpcd/acl.d/luci-mod-status.json
+index 45dd7d7d9e4e..2ff497421627 100644
+--- a/modules/luci-mod-status/root/usr/share/rpcd/acl.d/luci-mod-status.json
++++ b/modules/luci-mod-status/root/usr/share/rpcd/acl.d/luci-mod-status.json
+@@ -31,6 +31,7 @@
+ 		"read": {
+ 			"cgi-io": [ "exec" ],
+ 			"file": {
++				"/usr/bin/awk": [ "exec" ],
+ 				"/bin/dmesg -r": [ "exec" ],
+ 				"/sbin/logread": [ "stat" ],
+ 				"/sbin/logread -e ^": [ "exec" ],

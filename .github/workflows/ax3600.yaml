@@ -47,7 +47,7 @@ jobs:
                 cd openwrt
                 git config --global user.name "${GITHUB_ACTOR}"
                 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-                ls ../patches | xargs -I {} git apply -v ../patches/{}
+                ls $GITHUB_WORKSPACE/patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/patches/{}
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p {dl,build_dir,staging_dir}
             - uses: actions/cache@v4
@@ -66,12 +66,14 @@ jobs:
                 cd openwrt
                 bash openwrt.sh
                 mkdir files
-                ls ../files/ | xargs -I "{}" cp -rf ../files/{} files/
+                ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
             - name: Update and install feeds
               run: |
                 cd openwrt
                 ./scripts/feeds update -a
                 ./scripts/feeds install -a
+                cd feeds/luci
+                ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
             - name: Download package sources
               run: |
                 mv .full_config openwrt/.config
