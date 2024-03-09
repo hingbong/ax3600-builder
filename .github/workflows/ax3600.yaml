@@ -44,6 +44,7 @@ jobs:
                 echo "OPENWRT_SOURCE_SHA=$(/usr/bin/git log -1 --format='%H')" >> "$GITHUB_OUTPUT"
             - name: Make cache paths
               run: |
+                set -e
                 cd openwrt
                 git config --global user.name "${GITHUB_ACTOR}"
                 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
@@ -62,6 +63,7 @@ jobs:
                   cache-key
             - name: Prepare
               run: |
+                set -e
                 mv openwrt.sh openwrt
                 cd openwrt
                 bash openwrt.sh
@@ -69,6 +71,7 @@ jobs:
                 ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
             - name: Update and install feeds
               run: |
+                set -e
                 cd openwrt
                 ./scripts/feeds update -a
                 ./scripts/feeds install -a
@@ -76,6 +79,7 @@ jobs:
                 ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
             - name: Download package sources
               run: |
+                set -e
                 mv .full_config openwrt/.config
                 cd openwrt
                 make defconfig V=s
