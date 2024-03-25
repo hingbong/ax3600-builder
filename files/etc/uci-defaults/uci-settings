@@ -75,6 +75,14 @@ uci set dhcp.lan.ra_lifetime='360'
 
 uci del firewall.@defaults[0].flow_offloading='0'
 
+uci del nginx._redirect2ssl
+uci del nginx._lan.listen
+uci add_list nginx._lan.listen='443 ssl default_server'
+uci add_list nginx._lan.listen='[::]:443 ssl default_server'
+uci add_list nginx._lan.listen='80 default_server'
+uci add_list nginx._lan.listen='[::]:80 default_server' 
+
+
 uci commit
 
 ## make default_radio1 as the iot network
