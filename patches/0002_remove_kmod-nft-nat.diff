@@ -1,0 +1,20 @@
+diff --git a/package/network/config/firewall4/Makefile b/package/network/config/firewall4/Makefile
+index f2b565d5de..7f1058b8d4 100644
+--- a/package/network/config/firewall4/Makefile
++++ b/package/network/config/firewall4/Makefile
+@@ -23,7 +23,7 @@ define Package/firewall4
+   TITLE:=OpenWrt 4th gen firewall
+   DEPENDS:= \
+ 	+kmod-nft-core +kmod-nft-fib +kmod-nft-offload \
+-	+kmod-nft-nat +kmod-nft-fullcone \
++	+kmod-nft-nat \
+ 	+nftables-json \
+ 	+ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci
+   EXTRA_DEPENDS:=ucode (>=2022.03.22)
+@@ -47,4 +47,4 @@ endef
+ define Build/Compile
+ endef
+ 
+-$(eval $(call BuildPackage,firewall4))
+\ No newline at end of file
++$(eval $(call BuildPackage,firewall4))
