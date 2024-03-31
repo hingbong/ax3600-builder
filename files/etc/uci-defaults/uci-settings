@@ -65,14 +65,6 @@ uci set unbound.ub_main.extended_stats='1'
 
 uci set dhcp.odhcpd.maindhcp='1'
 
-uci set dhcp.lan.ra_dns='0'
-uci set dhcp.lan.leasetime='5m'
-uci set dhcp.lan.ra_mininterval='0'
-uci set dhcp.lan.preferred_lifetime='5m'
-uci set dhcp.lan.ra_maxinterval='120'
-uci set dhcp.lan.ra_mininterval='40'
-uci set dhcp.lan.ra_lifetime='360'
-
 uci del firewall.@defaults[0].flow_offloading='0'
 
 uci del nginx._redirect2ssl
