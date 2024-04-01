@@ -38,6 +38,8 @@ uci set wireless.default_radio1.disassoc_low_ack='0'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio1.noscan=1
 uci set wireless.radio1.channel='8'
+uci set wireless.default_radio1.multicast_to_unicast_all='1'
+uci set wireless.default_radio0.multicast_to_unicast_all='1'
 
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
