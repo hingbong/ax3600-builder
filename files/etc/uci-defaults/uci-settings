@@ -1,6 +1,7 @@
 uci set system.@system[0].timezone=CST-8
 uci set system.@system[0].zonename=Asia/Shanghai
 uci set system.@system[0].hostname='link-to-the-future'
+uci set system.ntp.use_dhcp='0'
 uci commit system
 
 uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
