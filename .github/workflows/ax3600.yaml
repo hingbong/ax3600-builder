@@ -7,13 +7,21 @@ on:
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         permissions: write-all
         outputs:
           OPENWRT_SOURCE_REPO_URL: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REPO_URL }}
           OPENWRT_SOURCE_REF: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REF }}
           OPENWRT_SOURCE_SHA: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_SHA }}
         steps:
+            - name: Install dependencies
+              run: |
+                sudo apt update
+                sudo apt install -y \
+                build-essential clang flex bison g++ gawk \
+                gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
+                python3-setuptools rsync swig unzip zlib1g-dev file wget
+                sudo apt full-upgrade -y
             - name: Maximize build space
               uses: easimon/maximize-build-space@master
               with:
