@@ -11,6 +11,8 @@ uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
+uci set network.lan.igmp_snooping='1'
+network.@device[0].igmp_snooping='1'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
@@ -87,6 +89,7 @@ uci set network.iot.proto='none'
 
 uci set network.iot.proto='static'
 uci add_list network.iot.ipaddr='192.168.3.1/24'
+uci set network.iot.igmp_snooping='1'
 
 # /etc/config/dhcp
 uci set dhcp.iot=dhcp
