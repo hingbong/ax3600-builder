@@ -2,17 +2,16 @@ name: Build AX3600 NSS
 
 on: 
     workflow_dispatch:
-      #    schedule:
-      #  - cron: '0 0 * * *'
+      inputs:
+        branch:
+          required: true
+          type: string
+          default: "qualcommax-6.x-nss-wifi"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
         runs-on: ubuntu-24.04
         permissions: write-all
-        outputs:
-          OPENWRT_SOURCE_REPO_URL: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REPO_URL }}
-          OPENWRT_SOURCE_REF: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_REF }}
-          OPENWRT_SOURCE_SHA: ${{ steps.openwrt_source_repo_info.outputs.OPENWRT_SOURCE_SHA }}
         steps:
             - name: Install dependencies
               run: |
@@ -41,15 +40,8 @@ jobs:
               uses: actions/checkout@v4
               with:
                 repository: qosmio/openwrt-ipq
-                ref: qualcommax-6.x-nss-wifi
+                ref: ${{ inputs.branch }}
                 path: openwrt
-            - name: Get OpenWrt source Info
-              id: openwrt_source_repo_info
-              run: |
-                cd openwrt
-                echo "OPENWRT_SOURCE_REPO_URL=$(git config --get remote.origin.url)" >> "$GITHUB_OUTPUT"
-                echo "OPENWRT_SOURCE_REF=$(git rev-parse --abbrev-ref HEAD)" >> "$GITHUB_OUTPUT"
-                echo "OPENWRT_SOURCE_SHA=$(/usr/bin/git log -1 --format='%H')" >> "$GITHUB_OUTPUT"
             - name: Make cache paths
               run: |
                 set -e
@@ -107,8 +99,17 @@ jobs:
                 cd openwrt
                 make -j $(($(nproc)+1)) V=s || \
                 make V=s
+            - name: Get revision
+              run: |
+                cd openwrt
+                echo "Repository URL: $(git config --get remote.origin.url)" >> bodyFile
+                echo "Git Reference: $(git rev-parse --abbrev-ref HEAD)" >> bodyFile
+                echo "SHA: $(git log -1 --format='%H')" >> bodyFile
+                export BASE_D=$PWD
+                for feed in feeds/*; do if [ -d "$feed/.git" ]; then cd $feed; echo "$feed: $(git rev-parse HEAD)" >> $BASE_D/bodyFile; cd $BASE_D; fi; done
             - name: TAR output
               run: |
+                cp openwrt/bodyFile openwrt/bin/targets/qualcommax/ipq807x/bodyFile
                 cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
                 tar -cvf ipq807xx-images.tar openwrt/bin/targets/
             - name: Upload artifacts
@@ -154,20 +155,13 @@ jobs:
 
             - name: Get the current date
               run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
-            - name: Generate bodyFile
-              run: |
-                echo "Repository URL: ${{ needs.build.outputs.OPENWRT_SOURCE_REPO_URL }}" >> bodyFile
-                echo "Git Reference: ${{ needs.build.outputs.OPENWRT_SOURCE_REF }}" >> bodyFile
-                echo "SHA: ${{ needs.build.outputs.OPENWRT_SOURCE_SHA }}" >> bodyFile
-                realpath bodyFile
-                cat bodyFile
             - name: Create a release
               uses: "ncipollo/release-action@v1"
               with:
                 name: "Updated prebuilt images ${{ env.NOW }}"
                 tag: "ax3600-${{ env.NOW }}"
                 makeLatest: true
-                bodyFile: bodyFile
+                bodyFile: openwrt/bin/targets/qualcommax/ipq807x/bodyFile
                 artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
 
