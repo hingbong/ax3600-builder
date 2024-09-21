@@ -131,7 +131,7 @@ uci set firewall.@rule[-1].target='ACCEPT'
 
 # /etc/config/wireless
 uci set wireless.default_radio1.network='iot'
-
+uci set network.iot.device='phy1-ap0'
 uci commit
 
 uci del unbound.ub_main.iface_lan
