@@ -20,6 +20,7 @@ CONFIG_COLLECT_KERNEL_DEBUG=y
 CONFIG_EXPERIMENTAL=y
 # CONFIG_FEED_hickory_dns is not set
 # CONFIG_FEED_nss_packages is not set
+# CONFIG_FEED_sqm_scripts_nss is not set
 CONFIG_GCC_DEFAULT_PIE=y
 CONFIG_GCC_USE_GRAPHITE=y
 # CONFIG_GCC_USE_VERSION_13 is not set
