@@ -7,6 +7,7 @@ uci commit system
 
 uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
 uci del network.wan6
+uci set firewall.@defaults[0].tcp_ecn='2'
 uci set firewall.@zone[1].network='wan'
 uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
