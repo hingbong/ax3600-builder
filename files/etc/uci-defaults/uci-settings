@@ -90,7 +90,6 @@ uci set unbound.ub_main.resource='large'
 uci set unbound.ub_main.recursion='aggressive'
 uci set unbound.ub_main.extended_stats='1'
 uci set unbound.ub_main.ttl_min='0'
-uci set unbound.ub_main.num_threads='2'
 
 uci set dhcp.odhcpd.maindhcp='1'
 
