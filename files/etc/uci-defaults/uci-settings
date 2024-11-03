@@ -68,7 +68,7 @@ uci set wireless.default_radio1.max_inactivity='86400'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
 uci set unbound.ub_main.dhcp4_slaac6='1'
-uci set unbound.ub_main.protocol='ip6_prefer'
+uci set unbound.ub_main.protocol='mixed'
 uci del unbound.ub_main.query_minimize
 uci del unbound.ub_main.query_min_strict
 
