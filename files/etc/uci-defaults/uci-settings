@@ -7,13 +7,15 @@ uci commit system
 
 uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
 uci del network.wan6
-uci set firewall.@defaults[0].tcp_ecn='2'
+uci set firewall.@defaults[0].tcp_ecn='1'
 uci set firewall.@zone[1].network='wan'
 uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
 uci set network.lan.igmp_snooping='1'
+uci add_list network.lan.dns='fd0f:7a7c:a8c9::1'
+uci add_list network.lan.dns='10.0.0.1'
 uci set network.@device[0].igmp_snooping='1'
 uci set network.@device[0].arp_accept='1'
 uci set network.@device[0].packet_steering=0
@@ -41,8 +43,10 @@ uci set wireless.radio0.cell_density='0'
 uci set wireless.radio1.cell_density='0'
 uci set wireless.default_radio0.dtim_period='5'
 uci set wireless.default_radio0.wnm_sleep_mode='1'
+uci set wireless.default_radio0.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.dtim_period='5'
 uci set wireless.default_radio1.wnm_sleep_mode='1'
+uci set wireless.default_radio1.multicast_to_unicast_all='1'
 uci set wireless.radio0.noscan='1'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio1.noscan='1'
@@ -89,7 +93,8 @@ uci set unbound.ub_main.unbound_control='1'
 uci set unbound.ub_main.resource='large'
 uci set unbound.ub_main.recursion='aggressive'
 uci set unbound.ub_main.extended_stats='1'
-uci set unbound.ub_main.ttl_min='0'
+uci set unbound.@unbound[0].add_local_fqdn="3"
+uci set unbound.@unbound[0].add_wan_fqdn="1"
 
 uci set dhcp.odhcpd.maindhcp='1'
 
@@ -112,6 +117,7 @@ uci set network.iot=interface
 uci set network.iot.proto='static'
 uci add_list network.iot.ipaddr='192.168.3.1/24'
 uci set network.iot.igmp_snooping='1'
+uci add_list network.iot.dns='192.168.31.1'
 
 # /etc/config/dhcp
 uci set dhcp.iot=dhcp
