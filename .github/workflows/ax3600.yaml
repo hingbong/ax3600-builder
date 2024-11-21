@@ -6,7 +6,7 @@ on:
         branch:
           required: true
           type: string
-          default: "qualcommax-6.x-nss-wifi"
+          default: "main-nss"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
