@@ -23,6 +23,11 @@ uci set network.@device[0].flow_offloading=0
 uci set network.@device[0].flow_offloading_hw=0
 uci commit network
 
+uci set dhcp.lan.ra_mininterval='30'
+uci set dhcp.lan.ra_maxinterval='90'
+uci set dhcp.lan.ra_lifetime='9000'
+uci set dhcp.lan.ra_preference='high'
+
 # Enable wifi by default
 uci set wireless.radio0.country='US'
 uci set wireless.radio1.country='US'
@@ -41,10 +46,10 @@ uci set wireless.radio0.txpower='21'
 uci set wireless.radio0.channel='64'
 uci set wireless.radio0.cell_density='0'
 uci set wireless.radio1.cell_density='0'
-uci set wireless.default_radio0.dtim_period='5'
+uci set wireless.default_radio0.dtim_period='3'
 uci set wireless.default_radio0.wnm_sleep_mode='1'
 uci set wireless.default_radio0.multicast_to_unicast_all='1'
-uci set wireless.default_radio1.dtim_period='5'
+uci set wireless.default_radio1.dtim_period='3'
 uci set wireless.default_radio1.wnm_sleep_mode='1'
 uci set wireless.default_radio1.multicast_to_unicast_all='1'
 uci set wireless.radio0.noscan='1'
