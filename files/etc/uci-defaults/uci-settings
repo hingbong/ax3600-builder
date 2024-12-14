@@ -23,10 +23,14 @@ uci set network.@device[0].flow_offloading=0
 uci set network.@device[0].flow_offloading_hw=0
 uci commit network
 
-uci set dhcp.lan.ra_mininterval='30'
+uci set dhcp.lan.ra_mininterval='20'
 uci set dhcp.lan.ra_maxinterval='90'
-uci set dhcp.lan.ra_lifetime='9000'
+uci set dhcp.lan.ra_lifetime='270'
 uci set dhcp.lan.ra_preference='high'
+uci set dhcp.lan.dhcpv6='disabled'
+uci delete dhcp.lan.ra_flags
+uci set dhcp.lan.ra_flags='none'
+
 
 # Enable wifi by default
 uci set wireless.radio0.country='US'
