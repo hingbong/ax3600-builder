@@ -188,10 +188,7 @@ uci del unbound.ub_main.iface_lan
 uci add_list unbound.ub_main.iface_lan='iot'
 uci add_list unbound.ub_main.iface_lan='lan'
 uci del unbound.ub_main.iface_trig
-uci add_list unbound.ub_main.iface_trig='iot'
-uci add_list unbound.ub_main.iface_trig='lan'
 uci add_list unbound.ub_main.iface_trig='wan'
-uci add_list unbound.ub_main.iface_trig='wan6'
 uci del unbound.ub_main.iface_wan
 uci add_list unbound.ub_main.iface_wan='wan'
 uci add_list unbound.ub_main.iface_wan='wan6'
