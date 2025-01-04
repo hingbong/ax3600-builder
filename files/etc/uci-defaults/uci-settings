@@ -6,13 +6,9 @@ uci set system.@system[0].urandom_seed='1'
 uci commit system
 
 uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
-uci del network.wan6
 uci set firewall.@defaults[0].tcp_ecn='1'
-uci set firewall.@zone[1].network='wan'
 uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
-uci set network.wan.proto='pppoe'
-uci set network.wan.ipv6='auto'
 uci set network.lan.igmp_snooping='1'
 uci add_list network.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list network.lan.dns='10.0.0.1'
@@ -193,5 +189,8 @@ uci del unbound.ub_main.iface_trig
 uci add_list unbound.ub_main.iface_trig='iot'
 uci add_list unbound.ub_main.iface_trig='lan'
 uci add_list unbound.ub_main.iface_trig='wan'
-
+uci add_list unbound.ub_main.iface_trig='wan6'
+uci del unbound.ub_main.iface_wan
+uci add_list unbound.ub_main.iface_wan='wan'
+uci add_list unbound.ub_main.iface_wan='wan6'
 uci commit
