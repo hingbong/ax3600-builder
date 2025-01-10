@@ -194,4 +194,11 @@ uci add_list unbound.ub_main.iface_trig='iot'
 uci add_list unbound.ub_main.iface_trig='lan'
 uci add_list unbound.ub_main.iface_trig='wan'
 
+uci set einat.config.enabled='1'
+uci set einat.config.ifname='pppoe-wan'
+uci set einat.config.ports='1024-65535'
+uci del einat.config.internal_subnets
+uci add_list einat.config.internal_subnets='10.0.0.0/8'
+
+
 uci commit
