@@ -112,8 +112,9 @@ jobs:
                 echo "Repository URL: $(git config --get remote.origin.url)" >> bodyFile
                 echo "Git Reference: $(git rev-parse --abbrev-ref HEAD)" >> bodyFile
                 echo "SHA: $(git log -1 --format='%H')" >> bodyFile
-                export BASE_D=$PWD
-                for feed in feeds/*; do if [ -d "$feed/.git" ]; then cd $feed; echo "$feed: $(git rev-parse HEAD)" >> $BASE_D/bodyFile; cd $BASE_D; fi; done
+                echo "" >> bodyFile
+                cat bin/targets/qualcommax/ipq807x/feeds.buildinfo >> bodyFile
+                echo "" >> bodyFile
             - name: TAR output
               run: |
                 cp openwrt/bodyFile openwrt/bin/targets/qualcommax/ipq807x/bodyFile
