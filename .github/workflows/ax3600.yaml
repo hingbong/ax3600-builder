@@ -93,17 +93,17 @@ jobs:
             - name: Build tools
               run: |
                 cd openwrt
-                make tools/install -j $(($(nproc)+1)) V=s || \
+                make tools/install -j $(nproc) V=s || \
                 make tools/install V=s
             - name: Build toolchain
               run: |
                 cd openwrt
-                make toolchain/install -j $(($(nproc)+1)) V=s || \
+                make toolchain/install -j $(nproc) V=s || \
                 make toolchain/install V=s
             - name: Build target images
               run: |
                 cd openwrt
-                make -j $(($(nproc)+1)) V=s || \
+                make -j $(nproc) V=s || \
                 make V=s
             - name: Get revision
               run: |
