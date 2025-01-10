@@ -7,6 +7,10 @@ on:
           required: true
           type: string
           default: "main-nss"
+        prebuilt_llvm_bpf_url:
+          required: true
+          type: string
+          default: https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -17,7 +21,7 @@ jobs:
               run: |
                 sudo apt update
                 sudo apt install -y \
-                build-essential clang flex bison g++ gawk \
+                build-essential clang flex bison g++ gawk zstd \
                 gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
                 python3-setuptools rsync swig unzip zlib1g-dev file wget libelf-dev zlib1g-dev
                 sudo apt full-upgrade -y
@@ -84,11 +88,19 @@ jobs:
                 git clone --depth 1 --branch master --single-branch https://github.com/muink/openwrt-einat-ebpf.git package/einat-ebpf
                 cd feeds/luci
                 ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
+            - name: Prepare LLVM-BPF
+              run: |
+                export LLVM_URL=${{ inputs.prebuilt_llvm_bpf_url }}
+                curl -OL $LLVM_URL
+                tar xvf $(basename "${LLVM_URL}")
             - name: Download package sources
               run: |
                 set -e
                 mv .full_config openwrt/.config
+                export LLVM_BPF_PATH=$(realpath llvm-bpf)
                 cd openwrt
+                echo "CONFIG_USE_LLVM_HOST=y" >> .config
+                echo "CONFIG_BPF_TOOLCHAIN_HOST_PATH=\"${LLVM_BPF_PATH}\"" >> .config
                 make defconfig V=s
                 make download V=s
             - name: Build tools
