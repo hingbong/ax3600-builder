@@ -91,21 +91,28 @@ jobs:
             - name: Prepare LLVM-BPF
               run: |
                 export LLVM_URL=${{ inputs.prebuilt_llvm_bpf_url }}
+                cd openwrt
                 curl -OL $LLVM_URL
                 tar xvf $(basename "${LLVM_URL}")
             - name: Download package sources
               run: |
                 set -e
                 mv .full_config openwrt/.config
-                export LLVM_BPF_PATH=$(realpath llvm-bpf)
                 cd openwrt
+                export LLVM_BPF_PATH=$(realpath llvm-bpf)
+                sed -i 's/^CONFIG_BPF_TOOLCHAIN_BUILD_LLVM=y/# CONFIG_BPF_TOOLCHAIN_BUILD_LLVM is not set/' .config
+                sed -i 's/# CONFIG_BPF_TOOLCHAIN_HOST is not set/CONFIG_BPF_TOOLCHAIN_HOST=y/' .config
+                sed -i '/^CONFIG_USE_LLVM_BUILD=y/d' .config
                 echo "CONFIG_USE_LLVM_HOST=y" >> .config
+                echo "CONFIG_BPF_TOOLCHAIN_HOST=y" >> .config
                 echo "CONFIG_BPF_TOOLCHAIN_HOST_PATH=\"${LLVM_BPF_PATH}\"" >> .config
                 make defconfig V=s
-                make download V=s
+            - name: Show config
+              run: cat openwrt/.config
             - name: Build tools
               run: |
                 cd openwrt
+                make download V=s
                 make tools/install -j $(nproc) V=s || \
                 make tools/install V=s
             - name: Build toolchain
