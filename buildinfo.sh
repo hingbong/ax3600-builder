@@ -50,9 +50,5 @@ set_config CONFIG_NET_SCH_INGRESS m # dae
 set_config CONFIG_PACKAGE_libbpf m
 set_config CONFIG_PACKAGE_libelf m
 set_config CONFIG_PACKAGE_libpcap m
-set_config CONFIG_PACKAGE_libxdp m
 set_config CONFIG_PACKAGE_qosify m
-set_config CONFIG_PACKAGE_xdp-filter m
-set_config CONFIG_PACKAGE_xdp-loader m
-set_config CONFIG_PACKAGE_xdpdump m
 set_config CONFIG_PACKAGE_zlib m
