@@ -106,6 +106,7 @@ jobs:
                 echo "CONFIG_USE_LLVM_HOST=y" >> .config
                 echo "CONFIG_BPF_TOOLCHAIN_HOST=y" >> .config
                 echo "CONFIG_BPF_TOOLCHAIN_HOST_PATH=\"${LLVM_BPF_PATH}\"" >> .config
+                ../buildinfo.sh .config
                 make defconfig V=s
             - name: Show config
               run: cat openwrt/.config
