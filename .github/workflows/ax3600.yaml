@@ -3,6 +3,10 @@ name: Build AX3600 NSS
 on: 
     workflow_dispatch:
       inputs:
+        openwrt_repository:
+          required: true
+          type: string
+          default: "qosmio/openwrt-ipq"
         branch:
           required: true
           type: string
@@ -10,7 +14,7 @@ on:
         prebuilt_llvm_bpf_url:
           required: true
           type: string
-          default: https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst
+          default: "https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -43,7 +47,7 @@ jobs:
             - name: Pull OpenWrt source
               uses: actions/checkout@v4
               with:
-                repository: qosmio/openwrt-ipq
+                repository: ${{ inputs.openwrt_repository }}
                 ref: ${{ inputs.branch }}
                 path: openwrt
             - name: Make cache paths
