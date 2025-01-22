@@ -50,6 +50,12 @@ jobs:
                 repository: ${{ inputs.openwrt_repository }}
                 ref: ${{ inputs.branch }}
                 path: openwrt
+            - name: Pull immortalwrt
+              uses: actions/checkout@v4
+              with:
+                repository: immortalwrt/immortalwrt
+                ref: master
+                path: immortalwrt
             - name: Make cache paths
               run: |
                 set -e
@@ -83,6 +89,15 @@ jobs:
                 bash openwrt.sh
                 mkdir files
                 ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
+            - name: Firewall4 with Fullcone-nat
+              run: |
+                cd ${GITHUB_WORKSPACE}/openwrt/package/network/utils
+                cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/utils/fullconenat-nft .
+                ls fullconenat-nft/*
+                cd ${GITHUB_WORKSPACE}/openwrt/package/network/config/firewall4
+                rm -rf *
+                cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/config/firewall4/* .
+                ls */*
             - name: Update and install feeds
               run: |
                 set -e
@@ -102,13 +117,6 @@ jobs:
                 set -e
                 mv .full_config openwrt/.config
                 cd openwrt
-                export LLVM_BPF_PATH=$(realpath llvm-bpf)
-                sed -i 's/^CONFIG_BPF_TOOLCHAIN_BUILD_LLVM=y/# CONFIG_BPF_TOOLCHAIN_BUILD_LLVM is not set/' .config
-                sed -i 's/# CONFIG_BPF_TOOLCHAIN_HOST is not set/CONFIG_BPF_TOOLCHAIN_HOST=y/' .config
-                sed -i '/^CONFIG_USE_LLVM_BUILD=y/d' .config
-                echo "CONFIG_USE_LLVM_HOST=y" >> .config
-                echo "CONFIG_BPF_TOOLCHAIN_HOST=y" >> .config
-                echo "CONFIG_BPF_TOOLCHAIN_HOST_PATH=\"${LLVM_BPF_PATH}\"" >> .config
                 make defconfig V=s
             - name: Show config
               run: cat openwrt/.config
