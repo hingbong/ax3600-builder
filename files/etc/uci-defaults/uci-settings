@@ -6,7 +6,6 @@ uci set system.@system[0].urandom_seed='1'
 uci commit system
 
 uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
-uci set network.globals.multipath=enable
 uci del network.wan6
 uci set firewall.@defaults[0].tcp_ecn='1'
 uci set firewall.@zone[1].network='wan'
