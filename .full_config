@@ -297,6 +297,7 @@ CONFIG_PACKAGE_ucode-mod-lua=y
 CONFIG_PACKAGE_ucode-mod-math=y
 CONFIG_PACKAGE_uhttpd=y
 CONFIG_PACKAGE_uhttpd-mod-ubus=y
+CONFIG_PACKAGE_umdns=y
 CONFIG_PACKAGE_unbound-control=y
 CONFIG_PACKAGE_unbound-daemon=y
 CONFIG_PACKAGE_wireguard-tools=y
