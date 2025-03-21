@@ -27,9 +27,6 @@ uci set dhcp.lan.ra_maxinterval='124'
 uci set dhcp.lan.ra_mininterval='31'
 uci set dhcp.lan.ra_lifetime='496'
 uci set dhcp.lan.ra_preference='high'
-uci set dhcp.lan.dhcpv6='disabled'
-uci delete dhcp.lan.ra_flags
-uci set dhcp.lan.ra_flags='none'
 
 
 # Enable wifi by default
@@ -104,8 +101,9 @@ uci set unbound.ub_main.unbound_control='1'
 uci set unbound.ub_main.resource='large'
 uci set unbound.ub_main.recursion='aggressive'
 uci set unbound.ub_main.extended_stats='1'
-uci set unbound.@unbound[0].add_local_fqdn="3"
-uci set unbound.@unbound[0].add_wan_fqdn="2"
+uci set unbound.@unbound[0].add_local_fqdn='3'
+uci set unbound.@unbound[0].add_wan_fqdn='2'
+uci set unbound.@unbound[0].exclude_ipv6_ga='1'
 
 uci set dhcp.odhcpd.maindhcp='1'
 
