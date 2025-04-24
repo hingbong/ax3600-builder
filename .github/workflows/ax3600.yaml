@@ -82,6 +82,9 @@ jobs:
                 mv openwrt.sh openwrt
                 cd openwrt
                 bash openwrt.sh
+                bash ../generate_hosts.sh
+                echo '' >> package/base-files/files/etc/hosts
+                cat generated_hosts.txt >> package/base-files/files/etc/hosts
                 mkdir files
                 ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
             - name: Firewall4 with Fullcone-nat
