@@ -1,8 +1,8 @@
 diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
-index c6889df25d..dba8114482 100644
+index a6e937e479..dba8114482 100644
 --- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
 +++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
-@@ -41,34 +41,6 @@
+@@ -41,29 +41,6 @@
  	};
  };
  
@@ -15,13 +15,8 @@ index c6889df25d..dba8114482 100644
 -
 -	perst-gpio = <&tlmm 52 GPIO_ACTIVE_HIGH>;
 -
--	bridge@0,0 {
--		reg = <0x00000000 0 0 0 0>;
--		#address-cells = <3>;
--		#size-cells = <2>;
--		ranges;
--
--		wifi0: wifi@1,0 {
+-	pcie@0 {
+-		wifi0: wifi@0,0 {
 -			status = "okay";
 -
 -			compatible = "qcom,ath10k";
@@ -38,10 +33,10 @@ index c6889df25d..dba8114482 100644
  	qcom,ath11k-calibration-variant = "Xiaomi-AX3600";
  };
 diff --git a/target/linux/qualcommax/image/ipq807x.mk b/target/linux/qualcommax/image/ipq807x.mk
-index a13d06dea3..b27d4e52a6 100644
+index a63380690b..f05ee855d4 100644
 --- a/target/linux/qualcommax/image/ipq807x.mk
 +++ b/target/linux/qualcommax/image/ipq807x.mk
-@@ -400,7 +400,7 @@ define Device/xiaomi_ax3600
+@@ -449,7 +449,7 @@ define Device/xiaomi_ax3600
  	DEVICE_DTS_CONFIG := config@ac04
  	SOC := ipq8071
  	KERNEL_SIZE := 36608k
