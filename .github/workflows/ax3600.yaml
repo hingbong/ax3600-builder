@@ -11,10 +11,6 @@ on:
           required: true
           type: string
           default: "main-nss"
-        prebuilt_llvm_bpf_url:
-          required: true
-          type: string
-          default: "https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -108,12 +104,6 @@ jobs:
                 ./scripts/feeds install -a
                 cd feeds/luci
                 ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
-            - name: Prepare LLVM-BPF
-              run: |
-                export LLVM_URL=${{ inputs.prebuilt_llvm_bpf_url }}
-                cd openwrt
-                curl -OL $LLVM_URL
-                tar xvf $(basename "${LLVM_URL}")
             - name: Download package sources
               run: |
                 set -e
