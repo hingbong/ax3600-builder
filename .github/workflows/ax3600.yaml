@@ -125,6 +125,7 @@ jobs:
                 make toolchain/install V=s
             - name: Build target images
               run: |
+                unset GITHUB_ACTIONS
                 cd openwrt
                 make -j $(nproc) V=s || \
                 make V=s
