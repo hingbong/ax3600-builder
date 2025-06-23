@@ -14,7 +14,7 @@ on:
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-latest
         permissions: write-all
         steps:
             - name: Install dependencies
@@ -93,9 +93,6 @@ jobs:
                 cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/config/firewall4/* .
                 ls */*
 
-
-                cd ${GITHUB_WORKSPACE}/openwrt/package/firmware/ath11k-firmware/
-                curl -OL https://github.com/LiBwrt/openwrt-6.x/raw/refs/heads/kernel-6.12/package/firmware/ath11k-firmware/Makefile
             - name: Update and install feeds
               run: |
                 set -e
