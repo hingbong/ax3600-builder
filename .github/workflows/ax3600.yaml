@@ -11,6 +11,10 @@ on:
           required: true
           type: string
           default: "main-nss"
+        openwrt_merge_requests:
+          required: false
+          type: string
+          description: "Comma-separated list of OpenWrt PR numbers to apply as patches"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -77,6 +81,16 @@ jobs:
                 set -e
                 mv openwrt.sh openwrt
                 cd openwrt
+
+                # Apply OpenWrt PRs as patches
+                if [ -n "${{ inputs.openwrt_merge_requests }}" ]; then
+                  IFS=',' read -ra MR_LIST <<< "${{ inputs.openwrt_merge_requests }}"
+                  for mr in "${MR_LIST[@]}"; do
+                    echo "Applying OpenWrt PR #$mr"
+                    curl -sL "https://github.com/openwrt/openwrt/pull/$mr.patch" | git am
+                  done
+                fi
+
                 bash openwrt.sh
                 bash ../generate_hosts.sh
                 echo '' >> package/base-files/files/etc/hosts
@@ -192,4 +206,3 @@ jobs:
                 bodyFile: openwrt/bin/targets/qualcommax/ipq807x/bodyFile
                 artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
-
