@@ -27,7 +27,8 @@ uci set dhcp.lan.ra_maxinterval='124'
 uci set dhcp.lan.ra_mininterval='31'
 uci set dhcp.lan.ra_lifetime='496'
 uci set dhcp.lan.ra_preference='high'
-
+uci del dhcp.lan.ra_flags
+uci add_list dhcp.lan.ra_flags='other-config'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
