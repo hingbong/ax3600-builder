@@ -1,5 +1,5 @@
 diff --git a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
-index a6e937e479..dba8114482 100644
+index 4df2adbb20..dba8114482 100644
 --- a/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
 +++ b/target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/ipq8071-ax3600.dts
 @@ -41,29 +41,6 @@
@@ -13,7 +13,7 @@ index a6e937e479..dba8114482 100644
 -&pcie0 {
 -	status = "okay";
 -
--	perst-gpio = <&tlmm 52 GPIO_ACTIVE_HIGH>;
+-	perst-gpios = <&tlmm 52 GPIO_ACTIVE_HIGH>;
 -
 -	pcie@0 {
 -		wifi0: wifi@0,0 {
