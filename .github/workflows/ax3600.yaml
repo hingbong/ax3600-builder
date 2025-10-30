@@ -15,6 +15,10 @@ on:
           required: false
           type: string
           description: "Comma-separated list of OpenWrt PR numbers to apply as patches"
+        openwrt_commit:
+          required: false
+          type: string
+          description: "Comma-separated list of OpenWrt commit SHAs to cherry-pick"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -88,6 +92,19 @@ jobs:
                   for mr in "${MR_LIST[@]}"; do
                     echo "Applying OpenWrt PR #$mr"
                     curl -sL "https://github.com/openwrt/openwrt/pull/$mr.patch" | git am
+                  done
+                fi
+
+                # Add upstream remote for cherry-picking from openwrt/openwrt
+                git remote add upstream https://github.com/openwrt/openwrt.git
+                git fetch upstream
+
+                # Cherry-pick OpenWrt commits
+                if [ -n "${{ inputs.openwrt_commit }}" ]; then
+                  IFS=',' read -ra COMMIT_LIST <<< "${{ inputs.openwrt_commit }}"
+                  for commit in "${COMMIT_LIST[@]}"; do
+                    echo "Cherry-picking OpenWrt commit $commit"
+                    git cherry-pick $commit
                   done
                 fi
 
