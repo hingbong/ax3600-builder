@@ -223,3 +223,8 @@ jobs:
                 bodyFile: openwrt/bin/targets/qualcommax/ipq807x/bodyFile
                 artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
                 token: "${{ secrets.GITHUB_TOKEN }}"
+            - name: Delete artifact
+              uses: geekyeggo/delete-artifact@v5
+              with:
+                name: ipq807x-images
+                token: "${{ secrets.GITHUB_TOKEN }}"
