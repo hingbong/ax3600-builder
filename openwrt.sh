@@ -13,6 +13,7 @@ sed -i "s#git.openwrt.org/feed#github.com/openwrt#g" feeds.conf.default
 sed -i "s#git.openwrt.org/project#github.com/openwrt#g" feeds.conf.default
 
 echo "src-git hickory_dns https://github.com/hingbong/hickory-dns-openwrt.git" >> feeds.conf.default
+echo "src-git qosmio https://github.com/qosmio/packages-extra" >> feeds.conf.default
 
 cat feeds.conf.default
 
