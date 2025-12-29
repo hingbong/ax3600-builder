@@ -23,12 +23,13 @@ uci set network.@device[0].flow_offloading=0
 uci set network.@device[0].flow_offloading_hw=0
 uci commit network
 
-uci set dhcp.lan.ra_maxinterval='60'
-uci set dhcp.lan.ra_mininterval='20'
+uci set dhcp.lan.ra_maxinterval='30'
+uci set dhcp.lan.ra_mininterval='10'
 uci set dhcp.lan.ra_lifetime='1800'
 uci set dhcp.lan.ra_preference='high'
 uci del dhcp.lan.ra_flags
 uci add_list dhcp.lan.ra_flags='other-config'
+uci set dhcp.lan.ra_default='1'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
@@ -62,10 +63,10 @@ uci set wireless.default_radio0.bss_transition='1'
 uci set wireless.default_radio0.ft_over_ds='0'
 uci set wireless.default_radio0.ieee80211r='1'
 uci set wireless.default_radio0.ieee80211k='1'
-uci set wireless.default_radio0.proxy_arp='1'
+uci set wireless.default_radio0.proxy_arp='0'
 uci set wireless.default_radio0.time_advertisement='2'
 uci set wireless.default_radio0.time_zone='GMT0'
-uci set wireless.default_radio0.multicast_to_unicast_all='1'
+uci set wireless.default_radio0.multicast_to_unicast_all='0'
 uci set wireless.default_radio1.bss_transition='1'
 uci set wireless.default_radio1.ft_over_ds='0'
 uci set wireless.default_radio1.ieee80211r='1'
@@ -73,7 +74,7 @@ uci set wireless.default_radio1.ieee80211k='1'
 uci set wireless.default_radio1.time_advertisement='2'
 uci set wireless.default_radio1.time_zone='GMT0'
 uci set wireless.default_radio1.max_inactivity='86400'
-uci set wireless.default_radio1.multicast_to_unicast_all='1'
+uci set wireless.default_radio1.multicast_to_unicast_all='0'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
 uci set unbound.ub_main.dhcp4_slaac6='0'
