@@ -19,6 +19,16 @@ on:
           required: false
           type: string
           description: "Comma-separated list of OpenWrt commit SHAs to cherry-pick"
+        override_ath11k_makefile:
+          required: false
+          type: string
+          default: "false"
+          description: "Set to 'true' to override package/firmware/ath11k-firmware/Makefile with the official one"
+        ath11k_makefile_url:
+          required: false
+          type: string
+          default: "https://raw.githubusercontent.com/openwrt/openwrt/main/package/firmware/ath11k-firmware/Makefile"
+          description: "URL to fetch the official ath11k-firmware Makefile from"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
@@ -54,6 +64,16 @@ jobs:
                 repository: ${{ inputs.openwrt_repository }}
                 ref: ${{ inputs.branch }}
                 path: openwrt
+            - name: Optionally override ath11k Makefile
+              if: ${{ inputs.override_ath11k_makefile == 'true' }}
+              run: |
+                set -e
+                cd openwrt
+                mkdir -p package/firmware/ath11k-firmware
+                echo "Fetching ath11k Makefile from ${{ inputs.ath11k_makefile_url }}"
+                curl -fsSL "${{ inputs.ath11k_makefile_url }}" -o package/firmware/ath11k-firmware/Makefile
+                echo "Result:"
+                ls -l package/firmware/ath11k-firmware/Makefile || true
             - name: Pull immortalwrt
               uses: actions/checkout@v4
               with:
