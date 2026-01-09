@@ -34,8 +34,8 @@ uci set dhcp.lan.ra_default='1'
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
 uci set wireless.radio1.country='PA'
-uci set wireless.radio0.disabled=0
-uci set wireless.radio1.disabled=0
+uci set wireless.@wifi-iface[0].disabled=0
+uci set wireless.@wifi-iface[1].disabled=0
 uci set wireless.radio1.htmode='HE40'
 uci set wireless.radio0.htmode='HE160'
 uci set wireless.default_radio0.ssid='Link to the FUTURE'
