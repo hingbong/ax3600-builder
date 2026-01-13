@@ -1,34 +1,37 @@
 name: Build AX3600 NSS
 
 on: 
-    workflow_dispatch:
-      inputs:
-        openwrt_repository:
-          required: true
-          type: string
-          default: "qosmio/openwrt-ipq"
-        branch:
-          required: true
-          type: string
-          default: "main-nss"
-        openwrt_merge_requests:
-          required: false
-          type: string
-          description: "Comma-separated list of OpenWrt PR numbers to apply as patches"
-        openwrt_commit:
-          required: false
-          type: string
-          description: "Comma-separated list of OpenWrt commit SHAs to cherry-pick"
-        override_ath11k_makefile:
-          required: false
-          type: string
-          default: "false"
-          description: "Set to 'true' to override package/firmware/ath11k-firmware/Makefile with the official one"
-        ath11k_makefile_url:
-          required: false
-          type: string
-          default: "https://raw.githubusercontent.com/openwrt/openwrt/main/package/firmware/ath11k-firmware/Makefile"
-          description: "URL to fetch the official ath11k-firmware Makefile from"
+  workflow_dispatch:
+    inputs:
+      openwrt_repository:
+        required: true
+        type: string
+        default: "qosmio/openwrt-ipq"
+      branch:
+        required: true
+        type: string
+        default: "main-nss"
+      openwrt_merge_requests:
+        required: false
+        type: string
+        description: "Comma-separated list of OpenWrt PR numbers to apply as patches"
+      openwrt_commit:
+        required: false
+        type: string
+        description: "Comma-separated list of OpenWrt commit SHAs to cherry-pick"
+      override_ath11k_makefile:
+        required: false
+        type: choice
+        options:
+          - "false"
+          - "true"
+        default: "false"
+        description: "Set to 'true' to override package/firmware/ath11k-firmware/Makefile with the official one"
+      ath11k_makefile_url:
+        required: false
+        type: string
+        default: "https://raw.githubusercontent.com/openwrt/openwrt/main/package/firmware/ath11k-firmware/Makefile"
+        description: "URL to fetch the official ath11k-firmware Makefile from"
 jobs:
     build:
         name: Prepare and build AX3600 NSS generic images
