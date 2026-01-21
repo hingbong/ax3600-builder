@@ -13,30 +13,32 @@ uci set network.wan.peerdns='0'
 uci add_list network.wan.dns='::1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
-uci set network.lan.igmp_snooping='1'
 uci add_list network.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list network.lan.dns='10.0.0.1'
-uci set network.@device[0].igmp_snooping='1'
 uci set network.@device[0].arp_accept='1'
 uci set network.@device[0].packet_steering=0
 uci set network.@device[0].flow_offloading=0
 uci set network.@device[0].flow_offloading_hw=0
 uci commit network
 
-uci set dhcp.lan.ra_maxinterval='30'
-uci set dhcp.lan.ra_mininterval='10'
-uci set dhcp.lan.ra_lifetime='1800'
+uci set dhcp.lan.ra_maxinterval='90'
+uci set dhcp.lan.ra_mininterval='30'
+uci set dhcp.lan.ra_lifetime='3600'
 uci set dhcp.lan.ra_preference='high'
 uci del dhcp.lan.ra_flags
 uci add_list dhcp.lan.ra_flags='other-config'
 uci set dhcp.lan.ra_default='1'
+uci delete dhcp.lan.dns
+uci add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
+uci add_list dhcp.lan.dns='10.0.0.1'
+
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
 uci set wireless.radio1.country='PA'
 uci set wireless.@wifi-iface[0].disabled=0
 uci set wireless.@wifi-iface[1].disabled=0
-uci set wireless.radio1.htmode='HE40'
+uci set wireless.radio1.htmode='HE20'
 uci set wireless.radio0.htmode='HE160'
 uci set wireless.default_radio0.ssid='Link to the FUTURE'
 uci set wireless.default_radio1.ssid='Xiaomi_391F'
@@ -49,30 +51,14 @@ uci set wireless.radio0.txpower='18'
 uci set wireless.radio0.channel='64'
 uci set wireless.radio0.cell_density='0'
 uci set wireless.radio1.cell_density='0'
-uci set wireless.default_radio0.dtim_period='3'
-uci set wireless.default_radio0.wnm_sleep_mode='1'
-uci set wireless.default_radio1.dtim_period='3'
-uci set wireless.default_radio1.wnm_sleep_mode='1'
-uci set wireless.radio0.noscan='1'
+uci set wireless.default_radio0.dtim_period='2'
+uci set wireless.default_radio1.dtim_period='2'
 # Force 40Mhz on 2.4Ghz
-uci set wireless.radio1.noscan='1'
 uci set wireless.radio1.channel='6'
 
 uci set wireless.default_radio0.beacon_int='97'
-uci set wireless.default_radio0.bss_transition='1'
-uci set wireless.default_radio0.ft_over_ds='0'
-uci set wireless.default_radio0.ieee80211r='1'
-uci set wireless.default_radio0.ieee80211k='1'
 uci set wireless.default_radio0.proxy_arp='0'
-uci set wireless.default_radio0.time_advertisement='2'
-uci set wireless.default_radio0.time_zone='GMT0'
 uci set wireless.default_radio0.multicast_to_unicast_all='1'
-uci set wireless.default_radio1.bss_transition='1'
-uci set wireless.default_radio1.ft_over_ds='0'
-uci set wireless.default_radio1.ieee80211r='1'
-uci set wireless.default_radio1.ieee80211k='1'
-uci set wireless.default_radio1.time_advertisement='2'
-uci set wireless.default_radio1.time_zone='GMT0'
 uci set wireless.default_radio1.max_inactivity='86400'
 uci set wireless.default_radio1.multicast_to_unicast_all='0'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
@@ -124,7 +110,6 @@ uci set network.iot=interface
 
 uci set network.iot.proto='static'
 uci add_list network.iot.ipaddr='192.168.3.1/24'
-uci set network.iot.igmp_snooping='1'
 uci add_list network.iot.dns='192.168.31.1'
 
 # /etc/config/dhcp
