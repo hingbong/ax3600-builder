@@ -110,7 +110,7 @@ uci set network.iot=interface
 
 uci set network.iot.proto='static'
 uci add_list network.iot.ipaddr='192.168.3.1/24'
-uci add_list network.iot.dns='192.168.31.1'
+uci add_list network.iot.dns='192.168.3.1'
 
 # /etc/config/dhcp
 uci set dhcp.iot=dhcp
