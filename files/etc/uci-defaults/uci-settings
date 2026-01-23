@@ -21,9 +21,6 @@ uci set network.@device[0].flow_offloading=0
 uci set network.@device[0].flow_offloading_hw=0
 uci commit network
 
-uci set dhcp.lan.ra_maxinterval='90'
-uci set dhcp.lan.ra_mininterval='30'
-uci set dhcp.lan.ra_lifetime='3600'
 uci set dhcp.lan.ra_preference='high'
 uci del dhcp.lan.ra_flags
 uci add_list dhcp.lan.ra_flags='other-config'
@@ -51,8 +48,8 @@ uci set wireless.radio0.txpower='18'
 uci set wireless.radio0.channel='64'
 uci set wireless.radio0.cell_density='0'
 uci set wireless.radio1.cell_density='0'
-uci set wireless.default_radio0.dtim_period='2'
-uci set wireless.default_radio1.dtim_period='2'
+uci set wireless.default_radio0.dtim_period='3'
+uci set wireless.default_radio1.dtim_period='3'
 # Force 40Mhz on 2.4Ghz
 uci set wireless.radio1.channel='6'
 
@@ -60,7 +57,7 @@ uci set wireless.default_radio0.beacon_int='97'
 uci set wireless.default_radio0.proxy_arp='0'
 uci set wireless.default_radio0.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.max_inactivity='86400'
-uci set wireless.default_radio1.multicast_to_unicast_all='0'
+uci set wireless.default_radio1.multicast_to_unicast_all='1'
 uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
 uci set unbound.ub_main.dhcp_link='odhcpd'
 uci set unbound.ub_main.dhcp4_slaac6='0'
