@@ -32,9 +32,10 @@ on:
         type: string
         default: "https://raw.githubusercontent.com/openwrt/openwrt/main/package/firmware/ath11k-firmware/Makefile"
         description: "URL to fetch the official ath11k-firmware Makefile from"
+
 jobs:
-    build:
-        name: Prepare and build AX3600 NSS generic images
+    build_and_release:
+        name: Build and Release AX3600 NSS
         runs-on: ubuntu-latest
         permissions: write-all
         steps:
@@ -189,16 +190,28 @@ jobs:
                 echo "" >> bodyFile
                 cat bin/targets/qualcommax/ipq807x/feeds.buildinfo >> bodyFile
                 echo "" >> bodyFile
-            - name: TAR output
+
+            # --- 合并后的发布步骤开始 ---
+            - name: Prepare release files
               run: |
-                cp openwrt/bodyFile openwrt/bin/targets/qualcommax/ipq807x/bodyFile
+                # 将 config 文件复制到输出目录，方便作为 artifact 发布
                 cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
-                tar -cvf ipq807xx-images.tar openwrt/bin/targets/
-            - name: Upload artifacts
-              uses: actions/upload-artifact@v4
+            
+            - name: Get the current date
+              run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+
+            - name: Create a release
+              uses: "ncipollo/release-action@v1"
               with:
-                name: ipq807x-images
-                path: ipq807xx-images.tar
+                name: "Updated prebuilt images ${{ env.NOW }}"
+                tag: "ax3600-${{ env.NOW }}"
+                makeLatest: true
+                bodyFile: openwrt/bodyFile
+                # 直接指向编译生成目录
+                artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
+                token: "${{ secrets.GITHUB_TOKEN }}"
+            # --- 发布步骤结束 ---
+
             - name: Clean for cache
               run: |
                 cd openwrt
@@ -222,32 +235,3 @@ jobs:
                    gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
                 done
                 echo "Done"
-    release:
-          name: Make a release
-          runs-on: ubuntu-latest
-          needs: build
-          steps:
-            - name: Download the image artifacts
-              uses: actions/download-artifact@v4
-              with:
-                name: ipq807x-images
-
-            - name: Extract the image artifacts
-              run: tar xf ipq807xx-images.tar
-
-            - name: Get the current date
-              run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
-            - name: Create a release
-              uses: "ncipollo/release-action@v1"
-              with:
-                name: "Updated prebuilt images ${{ env.NOW }}"
-                tag: "ax3600-${{ env.NOW }}"
-                makeLatest: true
-                bodyFile: openwrt/bin/targets/qualcommax/ipq807x/bodyFile
-                artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
-                token: "${{ secrets.GITHUB_TOKEN }}"
-            - name: Delete artifact
-              uses: geekyeggo/delete-artifact@v5
-              with:
-                name: ipq807x-images
-                token: "${{ secrets.GITHUB_TOKEN }}"
