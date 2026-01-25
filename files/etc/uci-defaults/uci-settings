@@ -28,7 +28,7 @@ uci set dhcp.lan.ra_default='1'
 uci delete dhcp.lan.dns
 uci add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list dhcp.lan.dns='10.0.0.1'
-
+uci set dhcp.lan.dhcpv6_pd_preferred='1'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
@@ -43,8 +43,8 @@ uci set wireless.default_radio1.encryption='psk2'
 uci set wireless.default_radio1.key='1qaz@WSX'
 uci set wireless.default_radio0.encryption='sae'
 uci set wireless.default_radio0.key='1qaz@WSX'
-uci set wireless.radio1.txpower='16'
-uci set wireless.radio0.txpower='18'
+uci set wireless.radio1.txpower='15'
+uci set wireless.radio0.txpower='20'
 uci set wireless.radio0.channel='64'
 uci set wireless.radio0.cell_density='0'
 uci set wireless.radio1.cell_density='0'
