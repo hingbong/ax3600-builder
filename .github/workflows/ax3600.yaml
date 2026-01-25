@@ -25,7 +25,7 @@ on:
         options:
           - "false"
           - "true"
-        default: "false"
+        default: "true"
         description: "Set to 'true' to override package/firmware/ath11k-firmware/Makefile with the official one"
       ath11k_makefile_url:
         required: false
