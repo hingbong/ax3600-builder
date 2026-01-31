@@ -120,7 +120,7 @@ uci set dhcp.iot=dhcp
 uci set dhcp.iot.interface='iot'
 uci set dhcp.iot.start='100'
 uci set dhcp.iot.limit='150'
-uci set dhcp.iot.leasetime='12h'
+uci set dhcp.iot.leasetime='infinite'
 
 uci set dhcp.iot.dhcpv4='server'
 uci set dhcp.iot.domain='iot'
