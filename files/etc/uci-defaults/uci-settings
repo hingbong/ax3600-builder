@@ -10,10 +10,9 @@ uci del network.wan6
 uci set firewall.@defaults[0].tcp_ecn='1'
 uci set firewall.@zone[1].network='wan'
 uci set network.wan.peerdns='0'
-uci add_list network.wan.dns='::1'
+uci add_list network.wan.dns='127.0.0.1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
-uci add_list network.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list network.lan.dns='10.0.0.1'
 uci set network.@device[0].arp_accept='1'
 uci set network.@device[0].packet_steering=0
