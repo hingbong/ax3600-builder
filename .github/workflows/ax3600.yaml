@@ -45,8 +45,7 @@ jobs:
                 sudo apt install -y \
                 build-essential clang flex bison g++ gawk zstd \
                 gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
-                python3-setuptools rsync swig unzip zlib1g-dev file wget libelf-dev zlib1g-dev
-                sudo apt full-upgrade -y
+                python3-setuptools rsync swig unzip zlib1g-dev file wget libelf-dev
             - name: Maximize build space
               uses: easimon/maximize-build-space@master
               with:
@@ -84,6 +83,9 @@ jobs:
                 repository: immortalwrt/immortalwrt
                 ref: master
                 path: immortalwrt
+                sparse-checkout: |
+                  package/network/utils/fullconenat-nft
+                  package/network/config/firewall4
             - name: Make cache paths
               run: |
                 set -e
@@ -95,15 +97,21 @@ jobs:
                 git rev-parse --short HEAD > ../lastest-commit
                 mkdir -p {dl,build_dir,staging_dir}
             - uses: actions/cache@v4
-              name: Cache
+              name: Cache dl
+              with:
+                path: openwrt/dl
+                key: dl-${{ github.run_id }}
+                restore-keys: |
+                  dl-
+            - uses: actions/cache@v4
+              name: Cache build
               with:
                 path: |
-                  openwrt/dl
                   openwrt/build_dir
                   openwrt/staging_dir
-                key: cache-key-${{ github.run_id }}
+                key: build-${{ github.run_id }}
                 restore-keys: |
-                  cache-key
+                  build-
             - name: Prepare
               run: |
                 set -e
@@ -119,12 +127,10 @@ jobs:
                   done
                 fi
 
-                # Add upstream remote for cherry-picking from openwrt/openwrt
-                git remote add upstream https://github.com/openwrt/openwrt.git
-                git fetch upstream
-
                 # Cherry-pick OpenWrt commits
                 if [ -n "${{ inputs.openwrt_commit }}" ]; then
+                  git remote add upstream https://github.com/openwrt/openwrt.git
+                  git fetch upstream
                   IFS=',' read -ra COMMIT_LIST <<< "${{ inputs.openwrt_commit }}"
                   for commit in "${COMMIT_LIST[@]}"; do
                     echo "Cherry-picking OpenWrt commit $commit"
@@ -153,6 +159,23 @@ jobs:
                 ./scripts/feeds install -a
                 cd feeds/luci
                 ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
+                # Allow downloading prebuilt CI LLVM instead of building from source
+                # Reverts openwrt/packages@4c3a649 which set this to false
+                cd $GITHUB_WORKSPACE/openwrt
+                sed -i 's/llvm\.download-ci-llvm=false/llvm.download-ci-llvm=true/g' feeds/packages/lang/rust/Makefile
+                grep "download-ci-llvm" feeds/packages/lang/rust/Makefile
+            - uses: actions/cache@v4
+              name: Cache Rust toolchain
+              with:
+                # Keyed by the Rust Makefile so it persists when the main build cache misses
+                # but Rust version hasn't changed, avoiding the expensive LLVM rebuild
+                # triggered by commit 4c3a649 (llvm.download-ci-llvm=false)
+                path: |
+                  openwrt/staging_dir/host
+                  openwrt/build_dir/host
+                key: rust-${{ hashFiles('openwrt/feeds/packages/lang/rust/Makefile') }}
+                restore-keys: |
+                  rust-
             - name: Download package sources
               run: |
                 set -e
@@ -164,7 +187,7 @@ jobs:
             - name: Build tools
               run: |
                 cd openwrt
-                make download V=s
+                make download -j$(nproc) V=s
                 make tools/install -j $(nproc) V=s || \
                 make tools/install V=s
             - name: Build toolchain
@@ -209,20 +232,17 @@ jobs:
                 token: "${{ secrets.GITHUB_TOKEN }}"
             # --- 发布步骤结束 ---
 
-            - name: Clean for cache
-              run: |
-                cd openwrt
-                make clean V=s
             - name: Cleanup old cache
               env:
                 GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 gh extension install actions/gh-actions-cache
                 REPO=${{ github.repository }}
-                BRANCH=master
+                BRANCH="${{ github.ref_name }}"
 
                 echo "Fetching list of cache key"
-                cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+                # Only delete dl/build caches; preserve rust- toolchain cache across runs
+                cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 | grep -E '^(dl|build)-')
 
                 ## Setting this to not fail the workflow while deleting cache keys. 
                 set +e
