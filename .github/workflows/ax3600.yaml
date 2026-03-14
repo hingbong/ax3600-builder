@@ -1,6 +1,6 @@
 name: Build AX3600 NSS
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       openwrt_repository:
@@ -34,226 +34,277 @@ on:
         description: "URL to fetch the official ath11k-firmware Makefile from"
 
 jobs:
-    build_and_release:
-        name: Build and Release AX3600 NSS
-        runs-on: ubuntu-latest
-        permissions: write-all
-        steps:
-            - name: Install dependencies
-              run: |
-                sudo apt update
-                sudo apt install -y \
-                build-essential clang flex bison g++ gawk zstd \
-                gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
-                python3-setuptools rsync swig unzip zlib1g-dev file wget libelf-dev
-            - name: Maximize build space
-              uses: easimon/maximize-build-space@master
-              with:
-                root-reserve-mb: 8192
-                temp-reserve-mb: 2048
-                remove-dotnet: 'true'
-                remove-android: 'true'
-                remove-haskell: 'true'
-                remove-codeql: 'true'
-            - name: show space
-              run: |
-                df -h
-            - name: Checkout
-              uses: actions/checkout@v4
-              id: octokit
-            - name: Pull OpenWrt source
-              uses: actions/checkout@v4
-              with:
-                repository: ${{ inputs.openwrt_repository }}
-                ref: ${{ inputs.branch }}
-                path: openwrt
-            - name: Optionally override ath11k Makefile
-              if: ${{ inputs.override_ath11k_makefile == 'true' }}
-              run: |
-                set -e
-                cd openwrt
-                mkdir -p package/firmware/ath11k-firmware
-                echo "Fetching ath11k Makefile from ${{ inputs.ath11k_makefile_url }}"
-                curl -fsSL "${{ inputs.ath11k_makefile_url }}" -o package/firmware/ath11k-firmware/Makefile
-                echo "Result:"
-                ls -l package/firmware/ath11k-firmware/Makefile || true
-            - name: Pull immortalwrt
-              uses: actions/checkout@v4
-              with:
-                repository: immortalwrt/immortalwrt
-                ref: master
-                path: immortalwrt
-                sparse-checkout: |
-                  package/network/utils/fullconenat-nft
-                  package/network/config/firewall4
-            - name: Make cache paths
-              run: |
-                set -e
-                cd openwrt
-                git config --global user.name "${GITHUB_ACTOR}"
-                git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-                ls $GITHUB_WORKSPACE/patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/patches/{}
+  build_and_release:
+    name: Build and Release AX3600 NSS
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+          build-essential clang flex bison g++ gawk zstd \
+          gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
+          python3-setuptools rsync swig unzip zlib1g-dev file wget libelf-dev
 
-                git rev-parse --short HEAD > ../lastest-commit
-                mkdir -p {dl,build_dir,staging_dir}
-            - uses: actions/cache@v4
-              name: Cache dl
-              with:
-                path: openwrt/dl
-                key: dl-${{ github.run_id }}
-                restore-keys: |
-                  dl-
-            - uses: actions/cache@v4
-              name: Cache build
-              with:
-                path: |
-                  openwrt/build_dir
-                  openwrt/staging_dir
-                key: build-${{ github.run_id }}
-                restore-keys: |
-                  build-
-            - name: Prepare
-              run: |
-                set -e
-                mv openwrt.sh openwrt
-                cd openwrt
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
 
-                # Apply OpenWrt PRs as patches
-                if [ -n "${{ inputs.openwrt_merge_requests }}" ]; then
-                  IFS=',' read -ra MR_LIST <<< "${{ inputs.openwrt_merge_requests }}"
-                  for mr in "${MR_LIST[@]}"; do
-                    echo "Applying OpenWrt PR #$mr"
-                    curl -sL "https://github.com/openwrt/openwrt/pull/$mr.patch" | git am
-                  done
-                fi
+      - name: show space
+        run: |
+          df -h
 
-                # Cherry-pick OpenWrt commits
-                if [ -n "${{ inputs.openwrt_commit }}" ]; then
-                  git remote add upstream https://github.com/openwrt/openwrt.git
-                  git fetch upstream
-                  IFS=',' read -ra COMMIT_LIST <<< "${{ inputs.openwrt_commit }}"
-                  for commit in "${COMMIT_LIST[@]}"; do
-                    echo "Cherry-picking OpenWrt commit $commit"
-                    git cherry-pick $commit
-                  done
-                fi
+      - name: Checkout
+        uses: actions/checkout@v4
+        id: octokit
 
-                bash openwrt.sh
-                mkdir files
-                ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
-            - name: Firewall4 with Fullcone-nat
-              run: |
-                cd ${GITHUB_WORKSPACE}/openwrt/package/network/utils
-                cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/utils/fullconenat-nft .
-                ls fullconenat-nft/*
-                cd ${GITHUB_WORKSPACE}/openwrt/package/network/config/firewall4
-                rm -rf *
-                cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/config/firewall4/* .
-                ls */*
+      - name: Pull OpenWrt source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.openwrt_repository }}
+          ref: ${{ inputs.branch }}
+          path: openwrt
 
-            - name: Update and install feeds
-              run: |
-                set -e
-                cd openwrt
-                ./scripts/feeds update -a
-                ./scripts/feeds install -a
-                cd feeds/luci
-                ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
-                # Allow downloading prebuilt CI LLVM instead of building from source
-                # Reverts openwrt/packages@4c3a649 which set this to false
-                cd $GITHUB_WORKSPACE/openwrt
-                sed -i 's/llvm\.download-ci-llvm=false/llvm.download-ci-llvm=true/g' feeds/packages/lang/rust/Makefile
-                grep "download-ci-llvm" feeds/packages/lang/rust/Makefile
-            - uses: actions/cache@v4
-              name: Cache Rust toolchain
-              with:
-                # Keyed by the Rust Makefile so it persists when the main build cache misses
-                # but Rust version hasn't changed, avoiding the expensive LLVM rebuild
-                # triggered by commit 4c3a649 (llvm.download-ci-llvm=false)
-                path: |
-                  openwrt/staging_dir/host
-                  openwrt/build_dir/host
-                key: rust-${{ hashFiles('openwrt/feeds/packages/lang/rust/Makefile') }}
-                restore-keys: |
-                  rust-
-            - name: Download package sources
-              run: |
-                set -e
-                mv .full_config openwrt/.config
-                cd openwrt
-                make defconfig V=s
-            - name: Show config
-              run: cat openwrt/.config
-            - name: Build tools
-              run: |
-                cd openwrt
-                make download -j$(nproc) V=s
-                make tools/install -j $(nproc) V=s || \
-                make tools/install V=s
-            - name: Build toolchain
-              run: |
-                cd openwrt
-                make toolchain/install -j $(nproc) V=s || \
-                make toolchain/install V=s
-            - name: Build target images
-              run: |
-                unset GITHUB_ACTIONS
-                cd openwrt
-                make -j $(nproc) V=s || \
-                make V=s
-            - name: Get revision
-              run: |
-                cd openwrt
-                echo "Repository URL: $(git config --get remote.origin.url)" >> bodyFile
-                echo "Git Reference: $(git rev-parse --abbrev-ref HEAD)" >> bodyFile
-                echo "SHA: $(git log -1 --format='%H')" >> bodyFile
-                echo "" >> bodyFile
-                cat bin/targets/qualcommax/ipq807x/feeds.buildinfo >> bodyFile
-                echo "" >> bodyFile
+      - name: Optionally override ath11k Makefile
+        if: ${{ inputs.override_ath11k_makefile == 'true' }}
+        run: |
+          set -e
+          cd openwrt
+          mkdir -p package/firmware/ath11k-firmware
+          echo "Fetching ath11k Makefile from ${{ inputs.ath11k_makefile_url }}"
+          curl -fsSL "${{ inputs.ath11k_makefile_url }}" -o package/firmware/ath11k-firmware/Makefile
+          echo "Result:"
+          ls -l package/firmware/ath11k-firmware/Makefile || true
 
-            # --- 合并后的发布步骤开始 ---
-            - name: Prepare release files
-              run: |
-                # 将 config 文件复制到输出目录，方便作为 artifact 发布
-                cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
-            
-            - name: Get the current date
-              run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+      - name: Pull immortalwrt
+        uses: actions/checkout@v4
+        with:
+          repository: immortalwrt/immortalwrt
+          ref: master
+          path: immortalwrt
+          sparse-checkout: |
+            package/network/utils/fullconenat-nft
+            package/network/config/firewall4
 
-            - name: Create a release
-              uses: "ncipollo/release-action@v1"
-              with:
-                name: "Updated prebuilt images ${{ env.NOW }}"
-                tag: "ax3600-${{ env.NOW }}"
-                makeLatest: true
-                bodyFile: openwrt/bodyFile
-                # 直接指向编译生成目录
-                artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
-                token: "${{ secrets.GITHUB_TOKEN }}"
-            # --- 发布步骤结束 ---
+      - name: Make cache paths
+        run: |
+          set -e
+          cd openwrt
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          ls $GITHUB_WORKSPACE/patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/patches/{}
 
-            - name: Cleanup old cache
-              env:
-                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                gh extension install actions/gh-actions-cache
-                REPO="${{ github.repository }}"
-                BRANCH="${{ github.ref_name }}"
+          git rev-parse --short HEAD > ../lastest-commit
+          mkdir -p {dl,build_dir,staging_dir}
 
-                echo "Fetching list of cache key"
-                # Only delete dl/build caches; preserve rust- toolchain cache across runs
-                mapfile -t cacheKeysForPR < <(
-                  gh actions-cache list -R "$REPO" -B "$BRANCH" | cut -f 1 | grep -E '^(dl|build)-' || true
-                )
+      - uses: actions/cache/restore@v4
+        id: cache-dl-restore
+        name: Restore dl cache
+        with:
+          path: openwrt/dl
+          key: dl-${{ github.ref_name }}-${{ github.run_number }}
+          restore-keys: |
+            dl-${{ github.ref_name }}-
 
-                if [ ${#cacheKeysForPR[@]} -eq 0 ]; then
-                  echo "No dl/build caches found"
-                  exit 0
-                fi
+      - uses: actions/cache/restore@v4
+        id: cache-host-restore
+        name: Restore host/toolchain cache
+        with:
+          path: |
+            openwrt/staging_dir/host
+            openwrt/build_dir/host
+            openwrt/staging_dir/toolchain-*
+            openwrt/build_dir/toolchain-*
+          key: host-${{ github.ref_name }}-${{ github.run_number }}
+          restore-keys: |
+            host-${{ github.ref_name }}-
 
-                echo "Deleting caches..."
-                for cacheKey in "${cacheKeysForPR[@]}"
-                do
-                   gh actions-cache delete "$cacheKey" -R "$REPO" -B "$BRANCH" --confirm || true
-                done
-                echo "Done"
+      - name: Prepare
+        run: |
+          set -e
+          mv openwrt.sh openwrt
+          cd openwrt
+
+          # Apply OpenWrt PRs as patches
+          if [ -n "${{ inputs.openwrt_merge_requests }}" ]; then
+            IFS=',' read -ra MR_LIST <<< "${{ inputs.openwrt_merge_requests }}"
+            for mr in "${MR_LIST[@]}"; do
+              echo "Applying OpenWrt PR #$mr"
+              curl -sL "https://github.com/openwrt/openwrt/pull/$mr.patch" | git am
+            done
+          fi
+
+          # Cherry-pick OpenWrt commits
+          if [ -n "${{ inputs.openwrt_commit }}" ]; then
+            git remote add upstream https://github.com/openwrt/openwrt.git
+            git fetch upstream
+            IFS=',' read -ra COMMIT_LIST <<< "${{ inputs.openwrt_commit }}"
+            for commit in "${COMMIT_LIST[@]}"; do
+              echo "Cherry-picking OpenWrt commit $commit"
+              git cherry-pick $commit
+            done
+          fi
+
+          bash openwrt.sh
+          mkdir files
+          ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
+
+      - name: Firewall4 with Fullcone-nat
+        run: |
+          cd ${GITHUB_WORKSPACE}/openwrt/package/network/utils
+          cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/utils/fullconenat-nft .
+          ls fullconenat-nft/*
+          cd ${GITHUB_WORKSPACE}/openwrt/package/network/config/firewall4
+          rm -rf *
+          cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/config/firewall4/* .
+          ls */*
+
+      - name: Update and install feeds
+        run: |
+          set -e
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          cd feeds/luci
+          ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
+          # Allow downloading prebuilt CI LLVM instead of building from source
+          # Reverts openwrt/packages@4c3a649 which set this to false
+          cd $GITHUB_WORKSPACE/openwrt
+          sed -i 's/llvm\.download-ci-llvm=false/llvm.download-ci-llvm=true/g' feeds/packages/lang/rust/Makefile
+          grep "download-ci-llvm" feeds/packages/lang/rust/Makefile
+
+      - name: Download package sources
+        run: |
+          set -e
+          mv .full_config openwrt/.config
+          cd openwrt
+          make defconfig V=s
+
+      - name: Show config
+        run: cat openwrt/.config
+
+      - name: Download distfiles
+        run: |
+          cd openwrt
+          make download -j$(nproc) V=s
+
+      - name: Build tools
+        run: |
+          cd openwrt
+          make tools/install -j $(nproc) V=s || \
+          make tools/install V=s
+
+      - name: Build toolchain
+        run: |
+          cd openwrt
+          make toolchain/install -j $(nproc) V=s || \
+          make toolchain/install V=s
+
+      - name: Build target images
+        run: |
+          unset GITHUB_ACTIONS
+          cd openwrt
+          make -j $(nproc) V=s || \
+          make V=s
+
+      - name: Get revision
+        run: |
+          cd openwrt
+          echo "Repository URL: $(git config --get remote.origin.url)" >> bodyFile
+          echo "Git Reference: $(git rev-parse --abbrev-ref HEAD)" >> bodyFile
+          echo "SHA: $(git log -1 --format='%H')" >> bodyFile
+          echo "" >> bodyFile
+          cat bin/targets/qualcommax/ipq807x/feeds.buildinfo >> bodyFile
+          echo "" >> bodyFile
+
+      - name: Prepare release files
+        run: |
+          cp openwrt/.config openwrt/bin/targets/qualcommax/ipq807x/buildconfig
+
+      - name: Get the current date
+        run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+
+      - name: Create a release
+        uses: "ncipollo/release-action@v1"
+        with:
+          name: "Updated prebuilt images ${{ env.NOW }}"
+          tag: "ax3600-${{ env.NOW }}"
+          makeLatest: true
+          bodyFile: openwrt/bodyFile
+          artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
+          token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - uses: actions/cache/save@v4
+        name: Save dl cache
+        continue-on-error: true
+        with:
+          path: openwrt/dl
+          key: dl-${{ github.ref_name }}-${{ github.run_number }}
+
+      - uses: actions/cache/save@v4
+        name: Save host/toolchain cache
+        continue-on-error: true
+        with:
+          path: |
+            openwrt/staging_dir/host
+            openwrt/build_dir/host
+            openwrt/staging_dir/toolchain-*
+            openwrt/build_dir/toolchain-*
+          key: host-${{ github.ref_name }}-${{ github.run_number }}
+
+      - name: Cleanup old cache
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh extension install actions/gh-actions-cache
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+
+          echo "Fetching list of cache key"
+          mapfile -t cacheKeysForPR < <(
+            gh actions-cache list -R "$REPO" -B "$BRANCH" | cut -f 1 | grep -E '^(dl|host)-' || true
+          )
+
+          if [ ${#cacheKeysForPR[@]} -eq 0 ]; then
+            echo "No dl/host caches found"
+            exit 0
+          fi
+
+          mapfile -t dlKeys < <(printf '%s\n' "${cacheKeysForPR[@]}" | grep '^dl-' || true)
+          mapfile -t hostKeys < <(printf '%s\n' "${cacheKeysForPR[@]}" | grep '^host-' || true)
+
+          # Sort by numeric run_number suffix (newest first) to avoid deleting the latest cache
+          mapfile -t dlKeys < <(
+            printf '%s\n' "${dlKeys[@]}" |
+            awk -F- 'NF {print $NF"\t"$0}' |
+            sort -rn |
+            cut -f2-
+          )
+          mapfile -t hostKeys < <(
+            printf '%s\n' "${hostKeys[@]}" |
+            awk -F- 'NF {print $NF"\t"$0}' |
+            sort -rn |
+            cut -f2-
+          )
+
+          echo "Deleting old caches, keep newest one per prefix..."
+          if [ ${#dlKeys[@]} -gt 1 ]; then
+            for ((i=1; i<${#dlKeys[@]}; i++)); do
+              gh actions-cache delete "${dlKeys[$i]}" -R "$REPO" -B "$BRANCH" --confirm || true
+            done
+          fi
+
+          if [ ${#hostKeys[@]} -gt 1 ]; then
+            for ((i=1; i<${#hostKeys[@]}; i++)); do
+              gh actions-cache delete "${hostKeys[$i]}" -R "$REPO" -B "$BRANCH" --confirm || true
+            done
+          fi
+
+          echo "Done"
