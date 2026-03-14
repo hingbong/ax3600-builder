@@ -28,12 +28,12 @@ uci delete dhcp.lan.dns
 uci add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list dhcp.lan.dns='10.0.0.1'
 uci set dhcp.lan.dhcpv6_pd_preferred='1'
-uci set dhcp.lan.leasetime='infinite'
-uci set dhcp.lan.ra_lifetime='9000'
-uci set dhcp.lan.ra_useleasetime='1'
-uci set dhcp.lan.max_preferred_lifetime='infinite'
-uci set dhcp.lan.max_valid_lifetime='infinite'
-
+uci set dhcp.lan.leasetime='21d'
+uci set dhcp.lan.ra_lifetime='2700'
+uci set dhcp.lan.max_preferred_lifetime='6h'
+uci set dhcp.lan.max_valid_lifetime='12h'
+uci set dhcp.lan.ra_mininterval='60'
+uci set dhcp.lan.ra_maxinterval='300'
 
 # Enable wifi by default
 uci set wireless.radio0.country='PA'
