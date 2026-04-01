@@ -62,11 +62,11 @@ jobs:
           df -h
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         id: octokit
 
       - name: Pull OpenWrt source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ inputs.openwrt_repository }}
           ref: ${{ inputs.branch }}
@@ -84,7 +84,7 @@ jobs:
           ls -l package/firmware/ath11k-firmware/Makefile || true
 
       - name: Pull immortalwrt
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: immortalwrt/immortalwrt
           ref: master
@@ -104,7 +104,7 @@ jobs:
           git rev-parse --short HEAD > ../lastest-commit
           mkdir -p {dl,build_dir,staging_dir}
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v5
         id: cache-dl-restore
         name: Restore dl cache
         with:
@@ -113,7 +113,7 @@ jobs:
           restore-keys: |
             dl-${{ github.ref_name }}-
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v5
         id: cache-host-restore
         name: Restore host/toolchain cache
         with:
@@ -241,14 +241,14 @@ jobs:
           artifacts: openwrt/bin/targets/qualcommax/ipq807x/*
           token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v5
         name: Save dl cache
         continue-on-error: true
         with:
           path: openwrt/dl
           key: dl-${{ github.ref_name }}-${{ github.run_number }}
 
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v5
         name: Save host/toolchain cache
         continue-on-error: true
         with:
