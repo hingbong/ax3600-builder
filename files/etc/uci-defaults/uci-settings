@@ -61,33 +61,6 @@ uci set wireless.default_radio0.beacon_int='97'
 # uci set wireless.default_radio0.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.max_inactivity='86400'
 # uci set wireless.default_radio1.multicast_to_unicast_all='1'
-uci set dhcp.odhcpd.leasetrigger='/usr/lib/unbound/odhcpd.sh'
-uci set unbound.ub_main.dhcp_link='odhcpd'
-uci set unbound.ub_main.dhcp4_slaac6='0'
-uci set unbound.ub_main.protocol='mixed'
-uci del unbound.ub_main.query_minimize
-uci del unbound.ub_main.query_min_strict
-
-uci del unbound.auth_icann
-uci del unbound.fwd_isp
-uci del unbound.fwd_google
-uci del unbound.fwd_cloudflare
-
-uci add unbound zone # =cfg04dc81
-uci set unbound.@zone[-1].fallback='0'
-uci set unbound.@zone[-1].enabled='1'
-uci set unbound.@zone[-1].zone_type='forward_zone'
-uci set unbound.@zone[-1].dns_assist='unprotected-loop'
-uci add_list unbound.@zone[-1].server='::1'
-uci add_list unbound.@zone[-1].zone_name='.'
-uci set unbound.@zone[-1].port='5335'
-uci set unbound.ub_main.unbound_control='1'
-uci set unbound.ub_main.resource='large'
-uci set unbound.ub_main.recursion='aggressive'
-uci set unbound.ub_main.extended_stats='1'
-uci set unbound.@unbound[0].add_local_fqdn='3'
-uci set unbound.@unbound[0].add_wan_fqdn='2'
-uci set unbound.@unbound[0].exclude_ipv6_ga='1'
 
 uci set dhcp.odhcpd.maindhcp='1'
 
@@ -168,14 +141,4 @@ uci set firewall.@rule[-1].dest_port='5353'
 
 # /etc/config/wireless
 uci set wireless.default_radio1.network='iot'
-uci commit
-
-uci del unbound.ub_main.iface_lan
-uci add_list unbound.ub_main.iface_lan='iot'
-uci add_list unbound.ub_main.iface_lan='lan'
-uci del unbound.ub_main.iface_trig
-uci add_list unbound.ub_main.iface_trig='iot'
-uci add_list unbound.ub_main.iface_trig='lan'
-uci add_list unbound.ub_main.iface_trig='wan'
-
 uci commit
