@@ -15,6 +15,7 @@ uci add_list network.wan.dns='127.0.0.1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
 uci add_list network.lan.dns='10.0.0.1'
+uci set network.lan.ip6assign='64'
 uci set network.@device[0].arp_accept='1'
 uci set network.@device[0].packet_steering=0
 uci set network.@device[0].flow_offloading=0
@@ -28,11 +29,8 @@ uci set dhcp.lan.ra_default='1'
 uci delete dhcp.lan.dns
 uci add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
 uci add_list dhcp.lan.dns='10.0.0.1'
-uci set dhcp.lan.dhcpv6_pd_preferred='1'
 uci set dhcp.lan.leasetime='21d'
 uci set dhcp.lan.ra_lifetime='2700'
-uci set dhcp.lan.max_preferred_lifetime='6h'
-uci set dhcp.lan.max_valid_lifetime='12h'
 uci set dhcp.lan.ra_mininterval='60'
 uci set dhcp.lan.ra_maxinterval='300'
 
