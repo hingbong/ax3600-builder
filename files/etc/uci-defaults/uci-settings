@@ -56,7 +56,7 @@ uci set wireless.radio1.cell_density='0'
 uci set wireless.radio1.channel='6'
 
 uci set wireless.default_radio0.beacon_int='97'
-# uci set wireless.default_radio0.multicast_to_unicast_all='1'
+uci set wireless.default_radio0.multicast_to_unicast_all='1'
 uci set wireless.default_radio1.max_inactivity='86400'
 # uci set wireless.default_radio1.multicast_to_unicast_all='1'
 
