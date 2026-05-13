@@ -15,7 +15,6 @@ uci add_list network.wan.dns='127.0.0.1'
 uci set network.wan.proto='pppoe'
 uci set network.wan.ipv6='auto'
 uci add_list network.lan.dns='10.0.0.1'
-uci set network.lan.ip6assign='64'
 uci set network.@device[0].arp_accept='1'
 uci set network.@device[0].packet_steering=0
 uci set network.@device[0].flow_offloading=0
