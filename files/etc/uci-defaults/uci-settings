@@ -1,132 +1,146 @@
-uci set system.@system[0].timezone=CST-8
-uci set system.@system[0].zonename=Asia/Shanghai
-uci set system.@system[0].hostname='link-to-the-future'
-uci set system.ntp.use_dhcp='0'
-uci set system.@system[0].urandom_seed='1'
-uci commit system
+#!/bin/sh
 
-uci set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
-uci set network.globals.dhcp_default_duid='0004b8942260f95a40bba37111df97df7728'
-uci del network.wan6
-uci set firewall.@defaults[0].tcp_ecn='1'
-uci set firewall.@zone[1].network='wan'
-uci set network.wan.peerdns='0'
-uci add_list network.wan.dns='127.0.0.1'
-uci set network.wan.proto='pppoe'
-uci set network.wan.ipv6='auto'
-uci set network.@device[0].arp_accept='1'
-uci set network.@device[0].packet_steering=0
-uci set network.@device[0].flow_offloading=0
-uci set network.@device[0].flow_offloading_hw=0
-uci commit network
+uci -q batch <<-EOF
+	# System
+	set system.@system[0].timezone='CST-8'
+	set system.@system[0].zonename='Asia/Shanghai'
+	set system.@system[0].hostname='link-to-the-future'
+	set system.ntp.use_dhcp='0'
+	set system.@system[0].urandom_seed='1'
+	commit system
 
-uci set dhcp.lan.ra_preference='high'
-uci del dhcp.lan.ra_flags
-uci add_list dhcp.lan.ra_flags='other-config'
-uci set dhcp.lan.ra_default='1'
-uci delete dhcp.lan.dns
-uci add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
-uci set dhcp.lan.leasetime='21d'
-uci set dhcp.lan.ra_maxinterval='600'
-uci set dhcp.lan.ra_mininterval='200'
-uci set dhcp.lan.ra_lifetime='9000'
+	# Network
+	set network.globals.ula_prefix='fd0f:7a7c:a8c9::/48'
+	set network.globals.dhcp_default_duid='0004b8942260f95a40bba37111df97df7728'
+	del network.wan6
+	set network.wan.peerdns='0'
+	del network.wan.dns
+	add_list network.wan.dns='127.0.0.1'
+	set network.wan.proto='pppoe'
+	set network.wan.ipv6='auto'
+	set network.@device[0].arp_accept='1'
+	set network.@device[0].packet_steering=0
+	set network.@device[0].flow_offloading=0
+	set network.@device[0].flow_offloading_hw=0
+	commit network
 
+	# Firewall defaults
+	set firewall.@defaults[0].tcp_ecn='1'
+	set firewall.@defaults[0].flow_offloading='0'
+	set firewall.@defaults[0].flow_offloading_hw='0'
+	set firewall.@zone[1].network='wan'
 
-# Enable wifi by default
-uci set wireless.radio0.country='PA'
-uci set wireless.radio1.country='PA'
-uci set wireless.@wifi-iface[0].disabled=0
-uci set wireless.@wifi-iface[1].disabled=0
-uci set wireless.radio1.htmode='HE20'
-uci set wireless.radio0.htmode='HE160'
-uci set wireless.default_radio0.ssid='Link to the FUTURE'
-uci set wireless.default_radio1.ssid='Xiaomi_391F'
-uci set wireless.default_radio1.encryption='psk2+ccmp'
-uci set wireless.default_radio1.key='1qaz@WSX'
-uci set wireless.default_radio0.encryption='psk2+ccmp'
-uci set wireless.default_radio0.key='1qaz@WSX'
-uci set wireless.default_radio0.dtim_period='5'
-uci set wireless.radio1.txpower='15'
-uci set wireless.radio0.txpower='20'
-uci set wireless.radio0.channel='36'
-uci set wireless.radio0.cell_density='0'
-uci set wireless.radio1.cell_density='0'
-# Force 40Mhz on 2.4Ghz
-uci set wireless.radio1.channel='6'
+	# DHCP / IPv6 RA
+	set dhcp.lan.ra_preference='high'
+	del dhcp.lan.ra_flags
+	add_list dhcp.lan.ra_flags='other-config'
+	set dhcp.lan.ra_default='1'
+	del dhcp.lan.dns
+	add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
+	set dhcp.lan.leasetime='21d'
+	set dhcp.lan.ra_maxinterval='600'
+	set dhcp.lan.ra_mininterval='200'
+	set dhcp.lan.ra_lifetime='9000'
+	set dhcp.odhcpd.maindhcp='1'
+	commit dhcp
 
-uci set wireless.default_radio0.beacon_int='97'
-uci set wireless.default_radio0.multicast_to_unicast_all='1'
-uci set wireless.default_radio1.max_inactivity='86400'
-# uci set wireless.default_radio1.multicast_to_unicast_all='1'
+	# WiFi
+	set wireless.radio0.country='PA'
+	set wireless.radio1.country='PA'
+	set wireless.@wifi-iface[0].disabled=0
+	set wireless.@wifi-iface[1].disabled=0
+	set wireless.radio1.htmode='HE20'
+	set wireless.radio0.htmode='HE160'
+	set wireless.default_radio0.ssid='Link to the FUTURE'
+	set wireless.default_radio1.ssid='Xiaomi_391F'
+	set wireless.default_radio1.encryption='psk2+ccmp'
+	set wireless.default_radio1.key='1qaz@WSX'
+	set wireless.default_radio0.encryption='psk2+ccmp'
+	set wireless.default_radio0.key='1qaz@WSX'
+	set wireless.default_radio0.dtim_period='5'
+	set wireless.radio1.txpower='15'
+	set wireless.radio0.txpower='20'
+	set wireless.radio0.channel='36'
+	set wireless.radio0.cell_density='0'
+	set wireless.radio1.cell_density='0'
+	set wireless.radio1.channel='6'
+	set wireless.default_radio0.beacon_int='97'
+	set wireless.default_radio0.multicast_to_unicast_all='1'
+	set wireless.default_radio1.max_inactivity='86400'
+	commit wireless
 
-uci set dhcp.odhcpd.maindhcp='1'
+	# IoT interface
+	set network.iot=interface
+	set network.iot.proto='static'
+	del network.iot.ipaddr
+	add_list network.iot.ipaddr='192.168.3.1/24'
+	commit network
 
-uci set firewall.@defaults[0].flow_offloading='0'
-uci set firewall.@defaults[0].flow_offloading_hw='0'
+	# IoT DHCP
+	set dhcp.iot=dhcp
+	set dhcp.iot.interface='iot'
+	set dhcp.iot.start='100'
+	set dhcp.iot.limit='150'
+	set dhcp.iot.leasetime='infinite'
+	set dhcp.iot.dhcpv4='server'
+	set dhcp.iot.domain='iot'
+	commit dhcp
 
-uci commit
+	# IoT firewall zone (named section — runs once, no duplicates)
+	set firewall.iot=zone
+	set firewall.iot.name='iot'
+	set firewall.iot.input='REJECT'
+	set firewall.iot.output='ACCEPT'
+	set firewall.iot.forward='REJECT'
+	del firewall.iot.network
+	add_list firewall.iot.network='iot'
 
-## make default_radio1 as the iot network
-# /etc/config/network
-uci set network.iot=interface
+	# IoT → WAN forwarding
+	set firewall.iot_wan=forwarding
+	set firewall.iot_wan.src='iot'
+	set firewall.iot_wan.dest='wan'
 
-uci set network.iot.proto='static'
-uci add_list network.iot.ipaddr='192.168.3.1/24'
+	# IoT firewall rules (named sections)
+	set firewall.rule_iot_dns=rule
+	set firewall.rule_iot_dns.name='Iot DNS'
+	set firewall.rule_iot_dns.src='iot'
+	set firewall.rule_iot_dns.dest_port='53'
+	set firewall.rule_iot_dns.target='ACCEPT'
 
-# /etc/config/dhcp
-uci set dhcp.iot=dhcp
-uci set dhcp.iot.interface='iot'
-uci set dhcp.iot.start='100'
-uci set dhcp.iot.limit='150'
-uci set dhcp.iot.leasetime='infinite'
+	set firewall.rule_iot_dhcp=rule
+	set firewall.rule_iot_dhcp.name='Iot DHCP'
+	del firewall.rule_iot_dhcp.proto
+	add_list firewall.rule_iot_dhcp.proto='udp'
+	set firewall.rule_iot_dhcp.src='iot'
+	set firewall.rule_iot_dhcp.dest_port='67-68'
+	set firewall.rule_iot_dhcp.target='ACCEPT'
 
-uci set dhcp.iot.dhcpv4='server'
-uci set dhcp.iot.domain='iot'
+	set firewall.rule_iot_icmp=rule
+	set firewall.rule_iot_icmp.name='Iot ICMP/IGMP'
+	del firewall.rule_iot_icmp.proto
+	add_list firewall.rule_iot_icmp.proto='icmp'
+	add_list firewall.rule_iot_icmp.proto='igmp'
+	set firewall.rule_iot_icmp.src='iot'
+	set firewall.rule_iot_icmp.target='ACCEPT'
 
-# /etc/config/firewall
-uci add firewall zone # =cfg10dc81
-uci set firewall.@zone[-1].name='iot'
-uci set firewall.@zone[-1].input='REJECT'
-uci set firewall.@zone[-1].output='ACCEPT'
-uci set firewall.@zone[-1].forward='REJECT'
-uci add_list firewall.@zone[-1].network='iot'
-uci add firewall forwarding # =cfg11ad58
-uci set firewall.@forwarding[-1].src='iot'
-uci set firewall.@forwarding[-1].dest='wan'
+	set firewall.rule_iot_dhcp6=rule
+	set firewall.rule_iot_dhcp6.name='Iot DHCPv6'
+	del firewall.rule_iot_dhcp6.proto
+	add_list firewall.rule_iot_dhcp6.proto='udp'
+	set firewall.rule_iot_dhcp6.src='iot'
+	set firewall.rule_iot_dhcp6.dest_port='546-547'
+	set firewall.rule_iot_dhcp6.target='ACCEPT'
 
-uci add firewall rule # =cfg1292bd
-uci set firewall.@rule[-1].name='Iot DNS'
-uci set firewall.@rule[-1].src='iot'
-uci set firewall.@rule[-1].dest_port='53'
-uci set firewall.@rule[-1].target='ACCEPT'
-uci add firewall rule # =cfg1392bd
-uci set firewall.@rule[-1].name='Iot DHCP'
-uci add_list firewall.@rule[-1].proto='udp'
-uci set firewall.@rule[-1].src='iot'
-uci set firewall.@rule[-1].dest_port='67-68'
-uci set firewall.@rule[-1].target='ACCEPT'
+	set firewall.rule_iot_mdns=rule
+	set firewall.rule_iot_mdns.name='Iot mDNS'
+	del firewall.rule_iot_mdns.proto
+	add_list firewall.rule_iot_mdns.proto='udp'
+	set firewall.rule_iot_mdns.src='iot'
+	set firewall.rule_iot_mdns.target='ACCEPT'
+	set firewall.rule_iot_mdns.dest_port='5353'
 
-uci add firewall rule # =cfg1592bd
-uci set firewall.@rule[-1].name='Iot ICMP/IGMP'
-uci add_list firewall.@rule[-1].proto='icmp'
-uci add_list firewall.@rule[-1].proto='igmp'
-uci set firewall.@rule[-1].src='iot'
-uci set firewall.@rule[-1].target='ACCEPT'
-
-uci add firewall rule # =cfg1592bd
-uci set firewall.@rule[-1].name='Iot DHCPv6'
-uci add_list firewall.@rule[-1].proto='udp'
-uci set firewall.@rule[-1].src='iot'
-uci set firewall.@rule[-1].dest_port='546-547'
-uci set firewall.@rule[-1].target='ACCEPT'
-
-uci add firewall rule # =cfg1692bd
-uci set firewall.@rule[-1].name='Iot mDNS'
-uci add_list firewall.@rule[-1].proto='udp'
-uci set firewall.@rule[-1].src='iot'
-uci set firewall.@rule[-1].target='ACCEPT'
-uci set firewall.@rule[-1].dest_port='5353'
-
-# /etc/config/wireless
-uci set wireless.default_radio1.network='iot'
-uci commit
+	# Wireless network assignment (IoT)
+	set wireless.default_radio1.network='iot'
+	commit wireless
+	commit firewall
+EOF
