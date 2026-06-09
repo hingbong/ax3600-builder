@@ -34,13 +34,13 @@ uci -q batch <<-EOF
 	set dhcp.lan.ra_preference='high'
 	del dhcp.lan.ra_flags
 	add_list dhcp.lan.ra_flags='other-config'
-	set dhcp.lan.ra_default='1'
+	set dhcp.lan.ra_default='2'
 	del dhcp.lan.dns
 	add_list dhcp.lan.dns='fd0f:7a7c:a8c9::1'
 	set dhcp.lan.leasetime='21d'
-	set dhcp.lan.ra_maxinterval='600'
-	set dhcp.lan.ra_mininterval='200'
-	set dhcp.lan.ra_lifetime='9000'
+	set dhcp.lan.ra_maxinterval='360'
+	set dhcp.lan.ra_mininterval='120'
+	set dhcp.lan.ra_lifetime='5400'
 	set dhcp.odhcpd.maindhcp='1'
 	commit dhcp
 
