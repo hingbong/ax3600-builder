@@ -161,6 +161,9 @@ jobs:
             CONFIG_PACKAGE_libustream-openssl=y \
             CONFIG_PACKAGE_apk-openssl=y \
             CONFIG_PACKAGE_xz-utils=y \
+            CONFIG_PACKAGE_tar=y \
+            CONFIG_PACKAGE_openssl-util=y \
+            CONFIG_PACKAGE_pppoe-discovery=y \
             CONFIG_PACKAGE_umdns=y \
             CONFIG_LIBCURL_OPENSSL=y ; do
             if ! grep -qx "$sym" .config; then
