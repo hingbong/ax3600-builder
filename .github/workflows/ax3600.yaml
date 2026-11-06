@@ -1,4 +1,4 @@
-name: Build AX3600 NSS
+name: Build AX3600 (upstream)
 
 on:
   workflow_dispatch:
@@ -6,36 +6,19 @@ on:
       openwrt_repository:
         required: true
         type: string
-        default: "qosmio/openwrt-ipq"
+        default: "openwrt/openwrt"
       branch:
         required: true
         type: string
-        default: "main-nss"
-      openwrt_merge_requests:
-        required: false
-        type: string
-        description: "Comma-separated list of OpenWrt PR numbers to apply as patches"
+        default: "main"
       openwrt_commit:
         required: false
         type: string
-        description: "Comma-separated list of OpenWrt commit SHAs to cherry-pick"
-      override_ath11k_makefile:
-        required: false
-        type: choice
-        options:
-          - "false"
-          - "true"
-        default: "false"
-        description: "Set to 'true' to override package/firmware/ath11k-firmware/Makefile with the official one"
-      ath11k_makefile_url:
-        required: false
-        type: string
-        default: "https://raw.githubusercontent.com/openwrt/openwrt/main/package/firmware/ath11k-firmware/Makefile"
-        description: "URL to fetch the official ath11k-firmware Makefile from"
+        description: "Comma-separated list of upstream OpenWrt commit SHAs to cherry-pick"
 
 jobs:
   build_and_release:
-    name: Build and Release AX3600 NSS
+    name: Build and Release AX3600
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -57,13 +40,11 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: show space
-        run: |
-          df -h
+      - name: Show space
+        run: df -h
 
-      - name: Checkout
+      - name: Checkout builder
         uses: actions/checkout@v6
-        id: octokit
 
       - name: Pull OpenWrt source
         uses: actions/checkout@v6
@@ -72,41 +53,10 @@ jobs:
           ref: ${{ inputs.branch }}
           path: openwrt
 
-      - name: Optionally override ath11k Makefile
-        if: ${{ inputs.override_ath11k_makefile == 'true' }}
-        run: |
-          set -e
-          cd openwrt
-          mkdir -p package/firmware/ath11k-firmware
-          echo "Fetching ath11k Makefile from ${{ inputs.ath11k_makefile_url }}"
-          curl -fsSL "${{ inputs.ath11k_makefile_url }}" -o package/firmware/ath11k-firmware/Makefile
-          echo "Result:"
-          ls -l package/firmware/ath11k-firmware/Makefile || true
-
-      - name: Pull immortalwrt
-        uses: actions/checkout@v6
-        with:
-          repository: immortalwrt/immortalwrt
-          ref: master
-          path: immortalwrt
-          sparse-checkout: |
-            package/network/utils/fullconenat-nft
-            package/network/config/firewall4
-
-      - name: Make cache paths
-        run: |
-          set -e
-          cd openwrt
-          git config --global user.name "${GITHUB_ACTOR}"
-          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          ls $GITHUB_WORKSPACE/patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/patches/{}
-
-          git rev-parse --short HEAD > ../lastest-commit
-          mkdir -p {dl,build_dir,staging_dir}
-
       - uses: actions/cache/restore@v5
         id: cache-dl-restore
         name: Restore dl cache
+        continue-on-error: true
         with:
           path: openwrt/dl
           key: dl-${{ github.ref_name }}-${{ github.run_number }}
@@ -116,6 +66,7 @@ jobs:
       - uses: actions/cache/restore@v5
         id: cache-host-restore
         name: Restore host/toolchain cache
+        continue-on-error: true
         with:
           path: |
             openwrt/staging_dir/host
@@ -126,45 +77,37 @@ jobs:
           restore-keys: |
             host-${{ github.ref_name }}-
 
-      - name: Prepare
+      - name: Cherry-pick upstream commits
+        if: inputs.openwrt_commit != ''
+        working-directory: openwrt
         run: |
           set -e
-          mv openwrt.sh openwrt
-          cd openwrt
+          git remote add upstream https://github.com/openwrt/openwrt.git
+          git fetch upstream
+          IFS=',' read -ra COMMITS <<< "${{ inputs.openwrt_commit }}"
+          for commit in "${COMMITS[@]}"; do
+            echo "Cherry-picking OpenWrt commit $commit"
+            git cherry-pick "$commit"
+          done
 
-          # Apply OpenWrt PRs as patches
-          if [ -n "${{ inputs.openwrt_merge_requests }}" ]; then
-            IFS=',' read -ra MR_LIST <<< "${{ inputs.openwrt_merge_requests }}"
-            for mr in "${MR_LIST[@]}"; do
-              echo "Applying OpenWrt PR #$mr"
-              curl -sL "https://github.com/openwrt/openwrt/pull/$mr.patch" | git am
-            done
-          fi
-
-          # Cherry-pick OpenWrt commits
-          if [ -n "${{ inputs.openwrt_commit }}" ]; then
-            git remote add upstream https://github.com/openwrt/openwrt.git
-            git fetch upstream
-            IFS=',' read -ra COMMIT_LIST <<< "${{ inputs.openwrt_commit }}"
-            for commit in "${COMMIT_LIST[@]}"; do
-              echo "Cherry-picking OpenWrt commit $commit"
-              git cherry-pick $commit
-            done
-          fi
-
-          bash openwrt.sh
-          mkdir files
-          ls $GITHUB_WORKSPACE/files/ | xargs -I "{}" cp -rf $GITHUB_WORKSPACE/files/{} files/
-
-      - name: Firewall4 with Fullcone-nat
+      - name: Prepare tree
         run: |
-          cd ${GITHUB_WORKSPACE}/openwrt/package/network/utils
-          cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/utils/fullconenat-nft .
-          ls fullconenat-nft/*
-          cd ${GITHUB_WORKSPACE}/openwrt/package/network/config/firewall4
-          rm -rf *
-          cp -r ${GITHUB_WORKSPACE}/immortalwrt/package/network/config/firewall4/* .
-          ls */*
+          set -e
+          cd openwrt
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          # Feed mirrors, default LAN IP, NTP servers, custom DNS feed
+          bash "$GITHUB_WORKSPACE/openwrt.sh"
+
+          # Disable the unused QCA9889 radio and its ath10k packages
+          bash "$GITHUB_WORKSPACE/scripts/disable-ath10k-ax3600.sh"
+
+          # Board overlay (sshd_config, uci-defaults, ...)
+          mkdir -p files
+          cp -rf "$GITHUB_WORKSPACE"/files/. files/
+
+          git rev-parse --short HEAD > ../lastest-commit
 
       - name: Update and install feeds
         run: |
@@ -172,20 +115,49 @@ jobs:
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          cd feeds/luci
-          ls $GITHUB_WORKSPACE/luci_patches | xargs -I {} git apply -v $GITHUB_WORKSPACE/luci_patches/{}
-          # Allow downloading prebuilt CI LLVM instead of building from source
-          # Reverts openwrt/packages@4c3a649 which set this to false
-          cd $GITHUB_WORKSPACE/openwrt
-          sed -i 's/llvm\.download-ci-llvm=false/llvm.download-ci-llvm=true/g' feeds/packages/lang/rust/Makefile
-          grep "download-ci-llvm" feeds/packages/lang/rust/Makefile
 
-      - name: Download package sources
+          # Let the Rust toolchain reuse a prebuilt CI LLVM instead of
+          # building LLVM from source (hickory-dns is a Rust package).
+          if [ -f feeds/packages/lang/rust/Makefile ]; then
+            sed -i 's/llvm\.download-ci-llvm=false/llvm.download-ci-llvm=true/g' \
+              feeds/packages/lang/rust/Makefile
+            grep -n "download-ci-llvm" feeds/packages/lang/rust/Makefile || true
+          fi
+
+      - name: Configure
         run: |
           set -e
-          mv .full_config openwrt/.config
           cd openwrt
-          make defconfig V=s
+          cp "$GITHUB_WORKSPACE/configs/ax3600.config" .config
+          make defconfig
+
+      - name: Verify config
+        run: |
+          set -e
+          cd openwrt
+          missing=0
+          for sym in \
+            CONFIG_TARGET_qualcommax=y \
+            CONFIG_TARGET_qualcommax_ipq807x=y \
+            CONFIG_TARGET_qualcommax_ipq807x_DEVICE_xiaomi_ax3600=y \
+            CONFIG_PACKAGE_luci=y \
+            CONFIG_PACKAGE_luci-app-firewall=y \
+            CONFIG_PACKAGE_hickory-dns=y \
+            CONFIG_PACKAGE_odhcpd=y \
+            CONFIG_PACKAGE_openssh-server=y \
+            CONFIG_PACKAGE_wpad-openssl=y \
+            CONFIG_PACKAGE_kmod-wireguard=y \
+            CONFIG_PACKAGE_wireguard-tools=y ; do
+            if ! grep -qx "$sym" .config; then
+              echo "::error::$sym is missing after defconfig"
+              missing=1
+            fi
+          done
+          if grep -q 'CONFIG_PACKAGE_kmod-qca-nss' .config; then
+            echo "::error::an NSS package leaked into the upstream config"
+            missing=1
+          fi
+          exit "$missing"
 
       - name: Show config
         run: cat openwrt/.config
@@ -280,7 +252,7 @@ jobs:
           mapfile -t dlKeys < <(printf '%s\n' "${cacheKeysForPR[@]}" | grep '^dl-' || true)
           mapfile -t hostKeys < <(printf '%s\n' "${cacheKeysForPR[@]}" | grep '^host-' || true)
 
-          # Sort by numeric run_number suffix (newest first) to avoid deleting the latest cache
+          # Sort by numeric run_number suffix (newest first) and keep the newest
           mapfile -t dlKeys < <(
             printf '%s\n' "${dlKeys[@]}" |
             awk -F- 'NF {print $NF"\t"$0}' |
