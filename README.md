@@ -27,6 +27,11 @@ them as GitHub releases.
   which appends a `&pcie0 { status = "disabled"; }` override and strips
   `ath10k-ct` from the device profile. A patch is no longer needed, so this
   keeps working when upstream reshapes the DTS.
+- **Wi-Fi firmware**: `WLAN.HK.2.12-01460` (qosmio/upstream-wifi-fw, hash-pinned)
+  is overlaid on top of the stock `ath11k-firmware-ipq8074` package rather
+  than replacing it, so that package's `board-2.bin` stays in place. The
+  workflow downloads and verifies the tarball, then copies `q6_fw.*` and
+  `m3_fw.*` into `files/lib/firmware/IPQ8074/`.
 - **Firewall**: `flow_offloading` and `flow_offloading_hw` are enabled in
   [`files/etc/uci-defaults/uci-settings`](files/etc/uci-defaults/uci-settings);
   without the hardware switch the PPE flow table is never programmed.

@@ -109,6 +109,22 @@ jobs:
 
           git rev-parse --short HEAD > ../lastest-commit
 
+      - name: Overlay WLAN.HK.2.12 Wi-Fi firmware
+        run: |
+          set -e
+          cd openwrt
+          url="https://github.com/qosmio/upstream-wifi-fw/releases/download/2.12-01460/ath11k-firmware-2.12-01460.tar.zst"
+          sha="a2767b367a51e15c1ab4d303113a0d1e22e73adf727a418119f4509f0ef115dd"
+          curl -fL --retry 3 -o /tmp/ath11k-2.12.tar.zst "$url"
+          echo "$sha  /tmp/ath11k-2.12.tar.zst" | sha256sum -c -
+          tar --zstd -xf /tmp/ath11k-2.12.tar.zst -C /tmp
+          src="/tmp/ath11k-firmware-2.12.01460/IPQ8074/hw2.0/testing/2.12/WLAN.HK.2.12-01460-QCAHKSWPL_SILICONZ-1"
+          install -d files/lib/firmware/IPQ8074
+          cp "$src"/q6_fw.* "$src"/m3_fw.* files/lib/firmware/IPQ8074/
+          rm -rf /tmp/ath11k-firmware-2.12.01460 /tmp/ath11k-2.12.tar.zst
+          test -s files/lib/firmware/IPQ8074/q6_fw.mdt
+          ls -l files/lib/firmware/IPQ8074/
+
       - name: Update and install feeds
         run: |
           set -e
@@ -150,6 +166,7 @@ jobs:
             CONFIG_PACKAGE_odhcpd=y \
             CONFIG_PACKAGE_openssh-server=y \
             CONFIG_PACKAGE_wpad-openssl=y \
+            CONFIG_PACKAGE_ath11k-firmware-ipq8074=y \
             CONFIG_PACKAGE_kmod-wireguard=y \
             CONFIG_PACKAGE_wireguard-tools=y \
             CONFIG_PACKAGE_kmod-sched-cake=y \
