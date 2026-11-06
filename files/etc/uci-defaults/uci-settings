@@ -56,7 +56,7 @@ uci -q batch <<-EOF
 	set wireless.default_radio1.ssid='Xiaomi_391F'
 	set wireless.default_radio1.encryption='psk2+ccmp'
 	set wireless.default_radio1.key='1qaz@WSX'
-	set wireless.default_radio0.encryption='psk2+ccmp'
+	set wireless.default_radio0.encryption='sae+ccmp'
 	set wireless.default_radio0.key='1qaz@WSX'
 	set wireless.default_radio0.dtim_period='5'
 	set wireless.radio1.txpower='15'
