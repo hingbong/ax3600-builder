@@ -160,6 +160,8 @@ jobs:
             CONFIG_PACKAGE_mptcpd=y \
             CONFIG_PACKAGE_libustream-openssl=y \
             CONFIG_PACKAGE_apk-openssl=y \
+            CONFIG_PACKAGE_xz-utils=y \
+            CONFIG_PACKAGE_umdns=y \
             CONFIG_LIBCURL_OPENSSL=y ; do
             if ! grep -qx "$sym" .config; then
               echo "::error::$sym is missing after defconfig"
@@ -168,6 +170,10 @@ jobs:
           done
           if grep -q 'CONFIG_PACKAGE_kmod-qca-nss' .config; then
             echo "::error::an NSS package leaked into the upstream config"
+            missing=1
+          fi
+          if grep -qE '^CONFIG_PACKAGE_(libmbedtls|apk-mbedtls|libustream-mbedtls)=(y|m)' .config; then
+            echo "::error::mbedTLS is still selected (want OpenSSL only)"
             missing=1
           fi
           exit "$missing"
