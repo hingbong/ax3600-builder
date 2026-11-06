@@ -215,6 +215,7 @@ jobs:
 
       - uses: actions/cache/save@v5
         name: Save dl cache
+        if: always()
         continue-on-error: true
         with:
           path: openwrt/dl
@@ -222,6 +223,7 @@ jobs:
 
       - uses: actions/cache/save@v5
         name: Save host/toolchain cache
+        if: always()
         continue-on-error: true
         with:
           path: |
