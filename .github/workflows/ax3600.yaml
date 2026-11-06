@@ -153,7 +153,9 @@ jobs:
             CONFIG_PACKAGE_kmod-wireguard=y \
             CONFIG_PACKAGE_wireguard-tools=y \
             CONFIG_PACKAGE_kmod-sched-cake=y \
-            CONFIG_PACKAGE_kmod-tcp-bbr=y ; do
+            CONFIG_PACKAGE_kmod-tcp-bbr=y \
+            CONFIG_PACKAGE_ppp-mod-pppoe=y \
+            CONFIG_PACKAGE_ipv6-neigh=y ; do
             if ! grep -qx "$sym" .config; then
               echo "::error::$sym is missing after defconfig"
               missing=1
