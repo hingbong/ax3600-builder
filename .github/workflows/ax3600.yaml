@@ -53,6 +53,18 @@ jobs:
           ref: ${{ inputs.branch }}
           path: openwrt
 
+      # Cached host/toolchain stamps are validated by mtime: scripts/timestamp.pl
+      # runs `find <dir> -newer <stamp>` and reports the target as out of date as
+      # soon as one source file is newer. A fresh checkout stamps every tracked
+      # file with "now", so every restored stamp looks stale and the whole
+      # tools/ tree is rebuilt (13-18 min per run). Aging the sources is safe:
+      # content changes are still detected by the content hashes baked into the
+      # stamp names (PKG_FILES_MD5 for tools, toolchain_hash for the toolchain).
+      - name: Normalize source mtimes
+        run: |
+          cd openwrt
+          git ls-files -z | xargs -0 -r touch -h -d '2001-01-01 00:00:00'
+
       - uses: actions/cache/restore@v5
         id: cache-dl-restore
         name: Restore dl cache
@@ -76,6 +88,20 @@ jobs:
           key: host-${{ github.ref_name }}-${{ github.run_number }}
           restore-keys: |
             host-${{ github.ref_name }}-
+
+      # Shows whether the restored stamps still gate the build, i.e. whether
+      # any source file is newer than them (stale-sources > 0 means a rebuild).
+      - name: Report restored host cache
+        run: |
+          cd openwrt
+          du -sh staging_dir/host build_dir/host 2>/dev/null || true
+          du -sh staging_dir/toolchain-* build_dir/toolchain-* 2>/dev/null || true
+          shopt -s nullglob
+          for stamp in staging_dir/host/stamp/.tools_compile* \
+                       staging_dir/toolchain-*/stamp/.toolchain_compile; do
+            newer=$(find tools toolchain -type f -newer "$stamp" | wc -l)
+            echo "stamp=$(basename "$stamp") stale-sources=$newer"
+          done
 
       - name: Cherry-pick upstream commits
         if: inputs.openwrt_commit != ''
