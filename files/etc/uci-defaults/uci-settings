@@ -22,7 +22,6 @@ uci -q batch <<-EOF
 	commit network
 
 	# Firewall defaults
-	set firewall.@defaults[0].tcp_ecn='1'
 	# qca_ppe hardware offload: both switches must be on, otherwise the
 	# in-tree PPE flow table is never programmed.
 	set firewall.@defaults[0].flow_offloading='1'
