@@ -103,6 +103,29 @@ jobs:
             echo "stamp=$(basename "$stamp") stale-sources=$newer"
           done
 
+      # include/prereq.mk (SetupHostCommand) symlinks host commands such as
+      # python3, file and which into staging_dir/host/bin, pointing at binaries
+      # of the runner image. Those links are cached along with staging_dir/host,
+      # so they dangle as soon as the image rolls (ubuntu-latest moved 24.04 ->
+      # 26.04, and the stale link then broke the apk host build with
+      # "staging_dir/host/bin/python3: No such file or directory").
+      # Drop broken links and re-point them at the current image.
+      - name: Refresh runner-bound host symlinks
+        run: |
+          cd openwrt
+          if [ -d staging_dir/host/bin ]; then
+            find staging_dir/host/bin -maxdepth 1 -type l ! -exec test -e {} \; -delete
+          fi
+          for cmd in python3 file which; do
+            if [ ! -x "staging_dir/host/bin/$cmd" ]; then
+              bin="$(command -v "$cmd" || true)"
+              if [ -n "$bin" ]; then
+                ln -sf "$bin" "staging_dir/host/bin/$cmd"
+              fi
+            fi
+          done
+          ls -l staging_dir/host/bin/python3 staging_dir/host/bin/file staging_dir/host/bin/which || true
+
       - name: Cherry-pick upstream commits
         if: inputs.openwrt_commit != ''
         working-directory: openwrt
@@ -269,9 +292,12 @@ jobs:
           path: openwrt/dl
           key: dl-${{ github.ref_name }}-${{ github.run_number }}
 
+      # Only publish the host/toolchain cache from a successful run: it carries
+      # runner-bound state (see "Refresh runner-bound host symlinks"), so saving
+      # a half-built tree from a failed run poisons the next one.
       - uses: actions/cache/save@v5
         name: Save host/toolchain cache
-        if: always()
+        if: success()
         continue-on-error: true
         with:
           path: |
