@@ -113,9 +113,9 @@ jobs:
       - name: Refresh runner-bound host symlinks
         run: |
           cd openwrt
-          if [ -d staging_dir/host/bin ]; then
-            find staging_dir/host/bin -maxdepth 1 -type l ! -exec test -e {} \; -delete
-          fi
+          # Nothing exists yet on a cache miss, so create the directory first.
+          mkdir -p staging_dir/host/bin
+          find staging_dir/host/bin -maxdepth 1 -type l ! -exec test -e {} \; -delete
           for cmd in python3 file which; do
             if [ ! -x "staging_dir/host/bin/$cmd" ]; then
               bin="$(command -v "$cmd" || true)"
