@@ -22,6 +22,17 @@ mac80211 包编译时按文件名顺序以 `-p1` 应用。
   所以 951 的 core.c hunk 已不需要（照抄会 fuzz 到错误的函数里），已删除；
   961 只保留 dp.h / dp_rx.c 的页片段缓存改动。
 
+## 交叉验证
+
+- PR 评论里 `mahir-m01`（2026-11-11，main `3b197b2007` / backports 7.2）给出的刷新方案与本目录一致：
+  编号用 960/961，hunk 1 重刷为 `<linux/gfp.h>` 在前、`<net/sock.h>` 在 `<linux/skbuff.h>` 之后。
+- `Gibbo97` 的独立结论补充了第二点：上游 `e56c9d429ba0`（即 OpenWrt 954）已把 shutdown 集中到
+  `ath11k_core_reconfigure_on_crash()` 锁内，所以 allocator 补丁里额外的
+  `ath11k_hif_irq_disable()` 应当删除——与本地删除 core.c hunk 的做法一致。
+- 关于 960（IRQ 幂等）：`Gibbo97` 认为在 954 之后“恢复失败再次恢复”仍可能造成 IRQ depth 失衡，
+  上游 2026-11 有新提案专门处理这个 retry 场景（https://lists.openwall.net/linux-kernel/2026/11/01/444）。
+  如果该提案进入 main，960 可能变得多余；巡检时顺带看一眼即可。
+
 ## 每日巡检要判定的四种情况
 
 1. **已不需要**：PR `state=closed` 且 `merged=true`，或 openwrt main 的

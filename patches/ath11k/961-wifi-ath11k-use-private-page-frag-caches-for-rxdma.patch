@@ -35,6 +35,7 @@ Tested-on: IPQ8074 hw2.0 WLAN.HK.2.9.0.1-02146-QCAHKSWPL_SILICONZ-1
 Signed-off-by: Mark Ruvald Pedersen <wabsie@gmail.com>
 
 ---
+
  drivers/net/wireless/ath/ath11k/dp.h    |  2 ++
  drivers/net/wireless/ath/ath11k/dp_rx.c | 49 +++++++++++++++++++++++++++------
  2 files changed, 43 insertions(+), 8 deletions(-)
@@ -60,14 +61,15 @@ index 84f6683..4e27c49 100644
  	/* Protects bufs_idr */
  	spinlock_t idr_lock;
 diff --git a/drivers/net/wireless/ath/ath11k/dp_rx.c b/drivers/net/wireless/ath/ath11k/dp_rx.c
-index e1425ce..da44637 100644
+index e1425ce..cf62105 100644
 --- a/drivers/net/wireless/ath/ath11k/dp_rx.c
 +++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -5,9 +5,11 @@
+@@ -4,10 +4,12 @@
+  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
   */
  
- #include <linux/fips.h>
 +#include <linux/gfp.h>
+ #include <linux/fips.h>
  #include <linux/ieee80211.h>
  #include <linux/kernel.h>
  #include <linux/skbuff.h>
