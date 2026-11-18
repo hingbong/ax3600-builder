@@ -27,6 +27,12 @@ them as GitHub releases.
   which appends a `&pcie0 { status = "disabled"; }` override and strips
   `ath10k-ct` from the device profile. A patch is no longer needed, so this
   keeps working when upstream reshapes the DTS.
+- **ath11k 内存**: each RXDMA ring gets its own `page_frag_cache`, ported from
+  [openwrt/openwrt#24254](https://github.com/openwrt/openwrt/pull/24254) into
+  [`patches/ath11k/`](patches/ath11k/) — the shared per-CPU page-frag cache
+  could retain sparsely used pages under sustained traffic. Provenance,
+  numbering and the daily upstream check are documented in
+  [`patches/ath11k/UPSTREAM.md`](patches/ath11k/UPSTREAM.md).
 - **Firewall**: `flow_offloading` and `flow_offloading_hw` are enabled in
   [`files/etc/uci-defaults/uci-settings`](files/etc/uci-defaults/uci-settings);
   without the hardware switch the PPE flow table is never programmed.

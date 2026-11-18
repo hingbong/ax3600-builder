@@ -158,6 +158,20 @@ jobs:
 
           git rev-parse --short HEAD > ../lastest-commit
 
+      - name: Apply local ath11k patches
+        run: |
+          set -e
+          cd openwrt
+          src="$GITHUB_WORKSPACE/patches/ath11k"
+          dst=package/kernel/mac80211/patches/ath11k
+          [ -d "$src" ] || exit 0
+          mkdir -p "$dst"
+          for p in "$src"/*.patch; do
+            [ -e "$p" ] || continue
+            cp -v "$p" "$dst/"
+          done
+          ls -1 "$dst" | tail -8
+
       - name: Update and install feeds
         run: |
           set -e
