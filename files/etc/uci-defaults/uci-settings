@@ -47,26 +47,19 @@ uci -q batch <<-EOF
 	set wireless.radio1.country='PA'
 	set wireless.@wifi-iface[0].disabled=0
 	set wireless.@wifi-iface[1].disabled=0
-	# radio1 = 2.4G IoT: ch11 + 11n + 11b rates for old devices
+	# radio1 = 2.4G IoT: ch11 + HT20 (no 11b rates)
 	set wireless.radio1.htmode='HT20'
-	set wireless.radio1.legacy_rates='1'
-	set wireless.radio0.htmode='HE160'
+	set wireless.radio0.htmode='HE80'
 	set wireless.default_radio0.ssid='Link to the FUTURE'
 	set wireless.default_radio1.ssid='Xiaomi_391F'
 	set wireless.default_radio1.encryption='psk2+ccmp'
 	set wireless.default_radio1.key='1qaz@WSX'
 	set wireless.default_radio0.encryption='sae+ccmp'
 	set wireless.default_radio0.key='1qaz@WSX'
-	set wireless.default_radio0.dtim_period='5'
 	set wireless.radio1.txpower='15'
 	set wireless.radio0.txpower='20'
-	set wireless.radio0.channel='36'
-	set wireless.radio0.cell_density='0'
-	set wireless.radio1.cell_density='0'
+	set wireless.radio0.channel='149'
 	set wireless.radio1.channel='11'
-	set wireless.default_radio0.beacon_int='97'
-	set wireless.default_radio0.multicast_to_unicast_all='1'
-	set wireless.default_radio1.max_inactivity='86400'
 	commit wireless
 
 	# IoT interface
